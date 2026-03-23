@@ -1,0 +1,11 @@
+pandas
+numpy
+scikit-learn
+scipy
+fastapi
+uvicorn
+anthropic
+pydantic
+python-dotenv
+httpx
+playwright
