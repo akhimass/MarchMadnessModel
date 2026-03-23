@@ -2,6 +2,34 @@
 
 AI-powered March Madness 2026 platform with a FastAPI backend, React frontend, bracket simulation, live scoreboard, betting assistant, and model performance tracking.
 
+## Model Overview
+
+The prediction engine is an ensemble that blends multiple model families into one calibrated win probability for every matchup.
+
+- **GBM (Gradient Boosting):** nonlinear matchup interactions and upset structure
+- **MLP (Neural Net):** pattern capture across combined stat/rank features
+- **Logistic Regression:** stable baseline from rating and seed differentials
+- **Random Forest:** variance-robust vote layer for noisy tournament games
+
+Core feature groups:
+
+- **Power ratings:** Massey Ordinals, rank deltas, consensus rating gaps
+- **Team quality:** net efficiency, offensive/defensive split, eFG, turnover profile
+- **Bracket context:** seed differential, historical seed win priors
+- **Injury enrichment:** availability/impact adjustments before probability output
+
+The final probability is calibrated and evaluated with **accuracy** and **Brier score**.
+
+## 2026 Accuracy Snapshot (Completed R64 + R32)
+
+| Round | Correct | Accuracy | Avg Brier |
+|---|---:|---:|---:|
+| Round of 64 | 24 / 32 | 75.0% | 0.142 |
+| Round of 32 | 10 / 16 | 62.5% | 0.198 |
+| **Combined** | **34 / 48** | **70.8%** | **0.161** |
+
+These metrics are surfaced in the app under `Model Analyzer` and used by the betting assistant to contextualize confidence and suggested staking.
+
 ## Features
 
 - Bracket picker with round navigation and saved brackets
