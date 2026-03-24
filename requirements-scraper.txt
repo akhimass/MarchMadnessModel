@@ -1,0 +1,3 @@
+# Optional: covers scraper / audit scripts (not needed for API on Render)
+-r requirements.txt
+playwright

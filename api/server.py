@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import os
+import threading
+import traceback
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from api.routes.bracket import router as bracket_router
@@ -44,39 +47,53 @@ def _cors_origins() -> list[str]:
     ]
 
 
+def _pipeline_bootstrap(app: FastAPI) -> None:
+    """Heavy sync work: load data, features, train/load models. Runs in a background thread."""
+    try:
+        data_dir = _get_env("DATA_DIR", "./data") or "./data"
+        standard_model_path = _get_env("STANDARD_MODEL_PATH", "")
+        chaos_model_path = _get_env("CHAOS_MODEL_PATH", "")
+        pipe_m = MarchMadnessPipeline(data_dir=data_dir, gender="M")
+        pipe_w = MarchMadnessPipeline(data_dir=data_dir, gender="W")
+
+        pipe_m.load_data()
+        pipe_m.build_features()
+        pipe_w.load_data()
+        pipe_w.build_features()
+
+        if standard_model_path and chaos_model_path and Path(standard_model_path).exists() and Path(chaos_model_path).exists():
+            from model.training.standard_model import MarchMadnessEnsemble
+            from model.training.chaos_model import ChaosModel
+
+            pipe_m.standard_model = MarchMadnessEnsemble.load(standard_model_path)
+            pipe_m.chaos_model = ChaosModel.load(chaos_model_path)
+            pipe_w.standard_model = MarchMadnessEnsemble.load(standard_model_path)
+            pipe_w.chaos_model = ChaosModel.load(chaos_model_path)
+        else:
+            pipe_m.train()
+            pipe_w.train()
+
+        app.state.pipeline_m = pipe_m
+        app.state.pipeline_w = pipe_w
+        app.state.pipeline = pipe_m
+        app.state.pipeline_ready = True
+        app.state.pipeline_bootstrap_error = None
+    except Exception:
+        app.state.pipeline_ready = False
+        app.state.pipeline_bootstrap_error = traceback.format_exc()
+        print("Pipeline bootstrap failed:\n" + app.state.pipeline_bootstrap_error)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: load pipeline + models.
-    data_dir = _get_env("DATA_DIR", "./data") or "./data"
-    standard_model_path = _get_env("STANDARD_MODEL_PATH", "")
-    chaos_model_path = _get_env("CHAOS_MODEL_PATH", "")
-    # Load both pipelines so frontend can query by gender.
-    pipe_m = MarchMadnessPipeline(data_dir=data_dir, gender="M")
-    pipe_w = MarchMadnessPipeline(data_dir=data_dir, gender="W")
+    # Bind $PORT immediately; load/train in background (Render requires an open port quickly).
+    app.state.pipeline_ready = False
+    app.state.pipeline_bootstrap_error = None
+    app.state.pipeline_m = None
+    app.state.pipeline_w = None
+    app.state.pipeline = None
 
-    pipe_m.load_data()
-    pipe_m.build_features()
-    pipe_w.load_data()
-    pipe_w.build_features()
-
-    if standard_model_path and chaos_model_path and Path(standard_model_path).exists() and Path(chaos_model_path).exists():
-        # Load saved models (skip training).
-        from model.training.standard_model import MarchMadnessEnsemble
-        from model.training.chaos_model import ChaosModel
-
-        pipe_m.standard_model = MarchMadnessEnsemble.load(standard_model_path)
-        pipe_m.chaos_model = ChaosModel.load(chaos_model_path)
-        pipe_w.standard_model = MarchMadnessEnsemble.load(standard_model_path)
-        pipe_w.chaos_model = ChaosModel.load(chaos_model_path)
-    else:
-        # Fallback: train from scratch.
-        pipe_m.train()
-        pipe_w.train()
-
-    # Primary pointers for backward compatibility.
-    app.state.pipeline_m = pipe_m
-    app.state.pipeline_w = pipe_w
-    app.state.pipeline = pipe_m
+    threading.Thread(target=_pipeline_bootstrap, args=(app,), name="pipeline-bootstrap", daemon=True).start()
     yield
 
 
@@ -96,13 +113,27 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def _require_pipeline_ready(request: Request, call_next):
+    if request.url.path.startswith("/api/") and request.url.path != "/api/health":
+        if not getattr(request.app.state, "pipeline_ready", False):
+            return JSONResponse(
+                status_code=503,
+                content={"detail": "Model pipeline is still loading. Retry shortly.", "path": request.url.path},
+            )
+    return await call_next(request)
+
+
 @app.get("/api/health")
 def health() -> Dict[str, Any]:
     pm = getattr(app.state, "pipeline_m", None)
     pw = getattr(app.state, "pipeline_w", None)
+    err = getattr(app.state, "pipeline_bootstrap_error", None)
+    ready = bool(getattr(app.state, "pipeline_ready", False)) and pm is not None and pw is not None
     return {
-        "status": "ok",
-        "ready": pm is not None and pw is not None,
+        "status": "error" if err else "ok",
+        "ready": ready,
+        "bootstrap_error": err,
         "gender_m": getattr(pm, "gender", None),
         "gender_w": getattr(pw, "gender", None),
         "cors_origins_configured": len(_cors_origins()),
