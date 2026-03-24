@@ -194,9 +194,18 @@ app.include_router(narrative_router)
 app.include_router(analyzer_router)
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
-_HAS_SPA_DIST = any((_REPO_ROOT / p).exists() for p in ("march-madness-insight/dist", "web/dist"))
 
-if not _HAS_SPA_DIST:
+
+def _spa_dist_with_index_html() -> Optional[Path]:
+    """Only treat as a built SPA if `index.html` exists (empty `web/dist/.gitkeep` is not a SPA)."""
+    for rel in ("march-madness-insight/dist", "web/dist"):
+        d = _REPO_ROOT / rel
+        if (d / "index.html").is_file():
+            return d
+    return None
+
+
+if _spa_dist_with_index_html() is None:
     # API-only deploy (Render): register / here so HEAD/GET are reliable (not nested in _mount_static).
     @app.get("/", include_in_schema=False)
     def root_get() -> Dict[str, Any]:
@@ -225,14 +234,9 @@ def _mount_static() -> None:
     if teamlogo_dir.exists():
         app.mount("/teamlogo", StaticFiles(directory=str(teamlogo_dir), html=False), name="teamlogo")
 
-    dist_candidates = [
-        repo_root / "march-madness-insight" / "dist",
-        repo_root / "web" / "dist",
-    ]
-    for dist_dir in dist_candidates:
-        if dist_dir.exists():
-            app.mount("/", StaticFiles(directory=str(dist_dir), html=True), name="static")
-            break
+    dist_dir = _spa_dist_with_index_html()
+    if dist_dir is not None:
+        app.mount("/", StaticFiles(directory=str(dist_dir), html=True), name="static")
 
 
 _mount_static()
