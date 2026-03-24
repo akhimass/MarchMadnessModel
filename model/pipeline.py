@@ -323,37 +323,15 @@ class MarchMadnessPipeline:
         self.load_enrichment()
 
     def load_enrichment(self) -> None:
-        """Load pre-computed enrichment data (run model/enrichment/run_all.py first)."""
-        # Current enrichment pipeline is men-only.
-        # Do not load men injury/recency adjustments for women's runs.
-        if self.gender != "M":
-            self.injury_impacts = {}
-            self.recency_updates = {}
-            print("  Enrichment disabled for W pipeline (men-only enrichment source).")
-            return
+        """
+        Disable local injury/recency cache loading for runtime predictions.
 
-        enrichment_path = Path("./data/cache/enrichment_2026.json")
-        if enrichment_path.exists():
-            data = json.loads(enrichment_path.read_text())
-            self.injury_impacts = data.get("injuries", {})
-            self.recency_updates = data.get("recency", {})
-            n_inj = sum(
-                1
-                for v in self.injury_impacts.values()
-                if v.get("severity") not in ["none", "unknown"]
-            )
-            n_rec = sum(
-                1
-                for v in self.recency_updates.values()
-                if isinstance(v, dict) and abs(v.get("adjustment", 0)) > 0.01
-            )
-            print(
-                f"  Enrichment loaded: {n_inj} injury flags, {n_rec} recency adjustments"
-            )
-        else:
-            self.injury_impacts = {}
-            self.recency_updates = {}
-            print("  No enrichment data found. Run: python -m model.enrichment.run_all")
+        This keeps live model responses deterministic from core matchup features
+        and avoids stale cache artifacts from influencing odds/predictor outputs.
+        """
+        self.injury_impacts = {}
+        self.recency_updates = {}
+        print("  Enrichment cache disabled for runtime (injury/recency set to neutral).")
 
     def train(self) -> None:
         """Train both standard and chaos models."""

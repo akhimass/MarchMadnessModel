@@ -135,7 +135,13 @@ def update_results(season: int, games: List[Dict[str, Any]]) -> Dict[str, Any]:
     for i, g in enumerate(games or []):
         if not isinstance(g, dict):
             continue
-        merged[_key(g, i)] = g
+        k = _key(g, i)
+        existing_entry = merged.get(k)
+        # Don't overwrite a quality entry (dayNum > 0) with a placeholder (dayNum == 0).
+        # syncResultsCache sends dayNum=0; original cache entries have correct dayNums 134-139.
+        if existing_entry and int(existing_entry.get("dayNum", 0)) > 0 and int(g.get("dayNum", 0)) == 0:
+            continue
+        merged[k] = g
 
     out = list(merged.values())
     cache_file.write_text(json.dumps(out, indent=2))

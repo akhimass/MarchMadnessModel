@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import json
+import re
 from typing import Any, Dict, List
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -48,13 +51,38 @@ def _get_seed_token_to_team_id(pipeline: Any, season: int) -> Dict[str, int]:
     return out
 
 
+def _completed_winner_by_pair_for_season(season: int) -> Dict[str, int]:
+    """
+    Read cached results and build {minId-maxId -> winnerId} for completed games.
+    Used to resolve First Four slot tokens (e.g. X16) into the actual live winner
+    when available.
+    """
+    out: Dict[str, int] = {}
+    p = Path(__file__).resolve().parents[2] / "data" / "cache" / "results_2026.json"
+    if not p.exists():
+        return out
+    try:
+        rows = json.loads(p.read_text())
+    except Exception:
+        return out
+    for r in rows:
+        if int(r.get("season", 0) or 0) != int(season):
+            continue
+        w = int(r.get("wTeamId", 0) or 0)
+        l = int(r.get("lTeamId", 0) or 0)
+        if not w or not l:
+            continue
+        out[f"{min(w, l)}-{max(w, l)}"] = w
+    return out
+
+
 _LETTER_TO_UI_REGION_KEY = {
     # Kaggle uses W/X/Y/Z seed token prefixes for the 4 regions.
     # Frontend tabs use: east/south/west/midwest.
     "W": "east",
     "X": "south",
-    "Y": "west",
-    "Z": "midwest",
+    "Y": "midwest",
+    "Z": "west",
 }
 
 _UI_REGION_KEY_TO_UI_REGION = {
@@ -66,10 +94,34 @@ _UI_REGION_KEY_TO_UI_REGION = {
 
 
 def _parse_seed_num(seed_token: str) -> int:
-    import re
-
     m = re.search(r"(\d{1,2})", str(seed_token))
     return int(m.group(1)) if m else 0
+
+
+# Kaggle first-round slots: R1W1=W01vW16, R1W2=W02vW15, …, R1W8=W08vW09.
+# NCAA pod display order (march-arena-reference): (1v16,8v9), (5v12,4v13), (6v11,3v14), (7v10,2v15)
+# → map trailing slot index 1..8 → pod stack position 0..7
+R1_SLOT_INDEX_TO_POD_ORDER: Dict[int, int] = {1: 0, 8: 1, 5: 2, 4: 3, 6: 4, 3: 5, 7: 6, 2: 7}
+
+
+def _r1_trailing_slot_index(slot_token: str) -> int:
+    m = re.match(r"^R1[WXYZ](\d+)$", str(slot_token), re.I)
+    return int(m.group(1)) if m else 99
+
+
+def _r1_first_round_pod_sort_key(row: Dict[str, Any]) -> int:
+    return R1_SLOT_INDEX_TO_POD_ORDER.get(_r1_trailing_slot_index(str(row.get("slot", ""))), 99)
+
+
+def _r1_round_matchup_sort_key(m: BracketRoundMatchup) -> tuple:
+    s = str(m.slot)
+    mat = re.match(r"^R1([WXYZ])(\d+)$", s, re.I)
+    if not mat:
+        return ("", 99, s)
+    letter = mat.group(1).upper()
+    num = int(mat.group(2))
+    pod = R1_SLOT_INDEX_TO_POD_ORDER.get(num, 99)
+    return (letter, pod, s)
 
 
 @router.get("/bracket/simulate")
@@ -188,6 +240,50 @@ def first_round_matchups(
         raise HTTPException(status_code=500, detail="seeds_df not available.")
 
     token_to_team = _get_seed_token_to_team_id(pipeline, season_i)
+    completed_winner_by_pair = _completed_winner_by_pair_for_season(season_i)
+    slot_row_by_slot: Dict[str, Any] = {
+        str(r["Slot"]): r for _, r in slots_season.iterrows()
+    }
+    resolve_cache: Dict[str, int | None] = {}
+
+    def resolve_ref(ref: str) -> int | None:
+        """
+        Resolve a seed/slot reference to concrete TeamID.
+        Handles direct seeds and play-in slot tokens (e.g. X16/Y11).
+        """
+        ref_s = str(ref)
+        if ref_s in resolve_cache:
+            return resolve_cache[ref_s]
+
+        if ref_s in token_to_team:
+            out = int(token_to_team[ref_s])
+            resolve_cache[ref_s] = out
+            return out
+
+        playin_row = slot_row_by_slot.get(ref_s)
+        if playin_row is None:
+            resolve_cache[ref_s] = None
+            return None
+
+        strong_ref = str(playin_row["StrongSeed"])
+        weak_ref = str(playin_row["WeakSeed"])
+        strong_team = resolve_ref(strong_ref)
+        weak_team = resolve_ref(weak_ref)
+        if strong_team is None or weak_team is None:
+            resolve_cache[ref_s] = None
+            return None
+
+        pair_key = f"{min(int(strong_team), int(weak_team))}-{max(int(strong_team), int(weak_team))}"
+        if pair_key in completed_winner_by_pair:
+            out = int(completed_winner_by_pair[pair_key])
+            resolve_cache[ref_s] = out
+            return out
+
+        pred = pipeline.get_matchup_prediction(int(strong_team), int(weak_team))
+        p_strong = float(pred.get("standard_prob", 0.0) or 0.0)
+        out = int(strong_team) if p_strong >= 0.5 else int(weak_team)
+        resolve_cache[ref_s] = out
+        return out
 
     # Team name lookup for UI.
     teams_df = getattr(pipeline, "teams_df", None)
@@ -202,8 +298,8 @@ def first_round_matchups(
         weak_token = str(row["WeakSeed"])
         slot_token = str(row["Slot"])
 
-        team1_id = token_to_team.get(strong_token)
-        team2_id = token_to_team.get(weak_token)
+        team1_id = resolve_ref(strong_token)
+        team2_id = resolve_ref(weak_token)
         if team1_id is None or team2_id is None:
             continue
 
@@ -241,6 +337,10 @@ def first_round_matchups(
                 "upsetFlag": upset_alert,
             }
         )
+    # Sort each region's matchups into NCAA pod order (see R1_SLOT_INDEX_TO_POD_ORDER).
+    for key in by_region:
+        by_region[key].sort(key=_r1_first_round_pod_sort_key)
+
     cache[cache_key] = by_region
     return FirstRoundMatchupsResponse(matchupsByRegion=by_region)
 
@@ -252,6 +352,7 @@ def round_matchups(
     stage: str | None = None,
     season: int = 2026,
     gender: str = "M",
+    strict_live: bool = False,
 ) -> BracketRoundMatchupsResponse:
     """
     Resolve matchups for a given bracket stage (R1..R6) based on user picks.
@@ -350,7 +451,13 @@ def round_matchups(
             resolve_cache[ref_s] = None
             return None
 
-        # Auto-advance winner for unresolved play-in slot tokens.
+        # In strict-live mode, only advance when the slot winner is explicitly known via picks.
+        # This prevents future rounds from auto-populating with model favorites.
+        if strict_live:
+            resolve_cache[ref_s] = None
+            return None
+
+        # Default mode: auto-advance winner for unresolved slot tokens using model favorite.
         pred = pipeline.get_matchup_prediction(int(strong_team), int(weak_team))
         p_strong = float(pred.get("standard_prob", 0.0) or 0.0)
         out = int(strong_team) if p_strong >= 0.5 else int(weak_team)
@@ -409,6 +516,9 @@ def round_matchups(
                 upsetFlag=upset_alert,
             )
         )
+
+    if stage == "R1" and out:
+        out.sort(key=_r1_round_matchup_sort_key)
 
     return BracketRoundMatchupsResponse(stage=stage, matchups=out)
 

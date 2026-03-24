@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 import pandas as pd
@@ -108,6 +110,39 @@ def _team_stats_to_response(pipeline: Any, team_id: int, season: int, request: R
     )
 
 
+def _compute_r64_r32_bias_adjustment() -> float:
+    """
+    Compute a small calibration adjustment from completed R64/R32 outcomes.
+    Positive means model has been underconfident, negative means overconfident.
+    """
+    path = Path("data/cache/results_2026.json")
+    if not path.exists():
+        return 0.0
+    try:
+        rows = json.loads(path.read_text())
+    except Exception:
+        return 0.0
+    if not isinstance(rows, list):
+        return 0.0
+
+    # Lightweight proxy: if available rows carry `predProbWinner`, use that.
+    # Otherwise no-op (we still expose game-by-game accuracy endpoint elsewhere).
+    diffs = []
+    for r in rows:
+        if not isinstance(r, dict):
+            continue
+        if str(r.get("round", "")).upper() not in {"R64", "R32"}:
+            continue
+        p = r.get("predProbWinner")
+        if isinstance(p, (float, int)):
+            diffs.append(1.0 - float(p))
+    if not diffs:
+        return 0.0
+    # Cap to +/- 3%
+    avg = sum(diffs) / len(diffs)
+    return max(-0.03, min(0.03, avg))
+
+
 @router.get("/matchup/{team1_id}/{team2_id}")
 def get_matchup(
     team1_id: int,
@@ -141,8 +176,10 @@ def get_matchup(
     if pipeline.standard_model is None or pipeline.chaos_model is None:
         raise HTTPException(status_code=500, detail="Models not loaded.")
 
-    standard_prob = float(pipeline.standard_model.predict_proba(X)[0])
+    standard_prob_raw = float(pipeline.standard_model.predict_proba(X)[0])
     chaos_prob = float(pipeline.chaos_model.predict_proba(X)[0])
+    # Apply live calibration from completed R64/R32 when available.
+    standard_prob = float(max(0.025, min(0.975, standard_prob_raw + _compute_r64_r32_bias_adjustment())))
 
     breakdown_raw: Dict[str, float] = {}
     if hasattr(pipeline.standard_model, "get_model_breakdown"):
