@@ -1,4 +1,5 @@
-data/
+# Model / Kaggle data at repository root only (not frontend src/data)
+/data/
 *.csv
 __pycache__/
 .env
