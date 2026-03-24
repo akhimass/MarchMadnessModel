@@ -1,4 +1,6 @@
 /** The Odds API — NCAA basketball: https://the-odds-api.com/sports-odds-data/basketball-odds.html */
+import type { Team2026Row } from "@/lib/api";
+import { menTeams2026 } from "@/data/teams2026";
 import { oddsNameToKaggle } from "@/lib/oddsNameMap";
 import { TOURNAMENT_DATES } from "@/lib/espnApi";
 import { parseEspnDateToYyyymmdd } from "@/lib/tournamentRounds";
@@ -310,6 +312,27 @@ export function inferNcaaRoundFromCommence(commenceIso: string): string {
   if (TOURNAMENT_DATES.finalFour.includes(d)) return "F4";
   if (TOURNAMENT_DATES.championship.includes(d)) return "CHAMP";
   return "R64";
+}
+
+/**
+ * Resolve a 2026 men's tournament row from an Odds API / book display string using bundled
+ * `menTeams2026` + `oddsNameToKaggle`. Used when `/api/teams/2026` is empty or still 503.
+ */
+export function team2026RowFromOddsName(oddsName: string | null | undefined): Team2026Row | null {
+  if (oddsName == null || String(oddsName).trim() === "") return null;
+  const kaggle = oddsNameToKaggle(oddsName);
+  if (!kaggle) return null;
+  const kn = kaggle.toLowerCase().replace(/['’.]/g, "'");
+  const t = menTeams2026.find((x) => x.name.toLowerCase().replace(/['’.]/g, "'") === kn);
+  if (!t) return null;
+  return {
+    teamId: t.id,
+    teamName: t.name,
+    seed: t.seed,
+    seedStr: String(t.seed),
+    region: t.region,
+    gender: "M",
+  };
 }
 
 export function matchTeamName(oddsName: string, ourTeams: string[]): string | null {

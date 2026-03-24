@@ -62,8 +62,11 @@ def _cors_origins() -> list[str]:
 def _bootstrap_w_pipeline(app: FastAPI, data_dir: str, use_pickles: bool) -> None:
     """Women's pipeline after men's is live — same model objects when using saved pickles."""
     try:
-        pipe_w = MarchMadnessPipeline(data_dir=data_dir, gender="W")
-        pipe_w.load_data()
+        pipe_w = getattr(app.state, "pipeline_w", None)
+        if pipe_w is None or getattr(pipe_w, "seeds_df", None) is None:
+            pipe_w = MarchMadnessPipeline(data_dir=data_dir, gender="W")
+            pipe_w.load_data()
+            app.state.pipeline_w = pipe_w
         pipe_w.build_features()
         pm = getattr(app.state, "pipeline_m", None)
         if pm is None:
@@ -103,6 +106,23 @@ def _pipeline_bootstrap(app: FastAPI) -> None:
 
         pipe_m = MarchMadnessPipeline(data_dir=data_dir_resolved, gender="M")
         pipe_m.load_data()
+        # Expose CSV-backed state immediately so `/api/teams/2026` works while
+        # `build_features()` runs (often minutes on small instances — was blocking the whole UI).
+        app.state.pipeline_m = pipe_m
+        app.state.pipeline = pipe_m
+        app.state.pipeline_teams_ready_m = True
+        print("[bootstrap] Men's seeds/teams CSVs loaded — /api/teams (M) is available.")
+
+        try:
+            pipe_w_early = MarchMadnessPipeline(data_dir=data_dir_resolved, gender="W")
+            pipe_w_early.load_data()
+            app.state.pipeline_w = pipe_w_early
+            app.state.pipeline_teams_ready_w = True
+            print("[bootstrap] Women's seeds/teams CSVs loaded — /api/teams (W) is available.")
+        except Exception:
+            app.state.pipeline_teams_ready_w = False
+            print("Women's load_data (early) failed:\n" + traceback.format_exc())
+
         pipe_m.build_features()
 
         if use_pickles and std_p and chaos_p:
@@ -117,6 +137,7 @@ def _pipeline_bootstrap(app: FastAPI) -> None:
         app.state.pipeline_m = pipe_m
         app.state.pipeline = pipe_m
         app.state.pipeline_ready = True
+        print("[bootstrap] Men's pipeline_ready — matchup + full model routes are available.")
         app.state.pipeline_bootstrap_error = None
 
         threading.Thread(
@@ -127,6 +148,8 @@ def _pipeline_bootstrap(app: FastAPI) -> None:
         ).start()
     except Exception:
         app.state.pipeline_ready = False
+        app.state.pipeline_teams_ready_m = False
+        app.state.pipeline_teams_ready_w = False
         app.state.pipeline_bootstrap_error = traceback.format_exc()
         print("Pipeline bootstrap failed:\n" + app.state.pipeline_bootstrap_error)
 
@@ -135,6 +158,8 @@ def _pipeline_bootstrap(app: FastAPI) -> None:
 async def lifespan(app: FastAPI):
     # Bind $PORT immediately; load/train in background (Render requires an open port quickly).
     app.state.pipeline_ready = False
+    app.state.pipeline_teams_ready_m = False
+    app.state.pipeline_teams_ready_w = False
     app.state.pipeline_bootstrap_error = None
     app.state.pipeline_m = None
     app.state.pipeline_w = None
@@ -171,6 +196,17 @@ def _api_allowed_before_pipeline_ready(path: str) -> bool:
     return False
 
 
+def _teams_route_early_ok(request: Request) -> bool:
+    """Tournament team list only needs load_data (seeds CSV), not build_features."""
+    path = request.url.path
+    if not path.startswith("/api/teams/"):
+        return False
+    g = (request.query_params.get("gender") or "M").upper().strip()
+    if g == "W":
+        return bool(getattr(request.app.state, "pipeline_teams_ready_w", False))
+    return bool(getattr(request.app.state, "pipeline_teams_ready_m", False))
+
+
 def _request_needs_women_pipeline(request: Request) -> bool:
     """Best-effort: query `gender=W` means we need pipeline_w (POST bodies not inspected)."""
     g = (request.query_params.get("gender") or "M").upper().strip()
@@ -179,14 +215,17 @@ def _request_needs_women_pipeline(request: Request) -> bool:
 
 @app.middleware("http")
 async def _require_pipeline_ready(request: Request, call_next):
-    if request.url.path.startswith("/api/") and not _api_allowed_before_pipeline_ready(request.url.path):
-        if not getattr(request.app.state, "pipeline_ready", False):
+    path = request.url.path
+    if path.startswith("/api/") and not _api_allowed_before_pipeline_ready(path):
+        if _teams_route_early_ok(request):
+            pass
+        elif not getattr(request.app.state, "pipeline_ready", False):
             return JSONResponse(
                 status_code=503,
                 content={
                     "detail": "Men's model pipeline is still loading. Retry shortly.",
-                    "path": request.url.path,
-                    "hint": "GET /api/health for ready_m / ready_w; scoreboard works earlier.",
+                    "path": path,
+                    "hint": "GET /api/health for teams_ready_m, ready_m, ready_w; scoreboard works earlier.",
                 },
             )
         if _request_needs_women_pipeline(request) and getattr(request.app.state, "pipeline_w", None) is None:
@@ -205,6 +244,8 @@ def health() -> Dict[str, Any]:
     pm = getattr(app.state, "pipeline_m", None)
     pw = getattr(app.state, "pipeline_w", None)
     err = getattr(app.state, "pipeline_bootstrap_error", None)
+    teams_ready_m = bool(getattr(app.state, "pipeline_teams_ready_m", False))
+    teams_ready_w = bool(getattr(app.state, "pipeline_teams_ready_w", False))
     ready_m = pm is not None and getattr(pm, "standard_model", None) is not None
     ready_w = pw is not None and getattr(pw, "standard_model", None) is not None
     return {
@@ -212,6 +253,8 @@ def health() -> Dict[str, Any]:
         "ready": ready_m and ready_w,
         "ready_m": ready_m,
         "ready_w": ready_w,
+        "teams_ready_m": teams_ready_m,
+        "teams_ready_w": teams_ready_w,
         "bootstrap_error": err,
         "gender_m": getattr(pm, "gender", None),
         "gender_w": getattr(pw, "gender", None),

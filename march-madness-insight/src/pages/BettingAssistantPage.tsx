@@ -17,6 +17,7 @@ import {
   inferNcaaRoundFromCommence,
   kellyBet,
   matchTeamName,
+  team2026RowFromOddsName,
   type OddsGame,
   type PortfolioProbRow,
 } from "@/lib/oddsApi";
@@ -53,13 +54,19 @@ function resolveGameTeams(
   teams: Team2026Row[],
 ): { home: Team2026Row; away: Team2026Row } | null {
   const names = teams.map((t) => t.teamName).filter(Boolean) as string[];
-  const homeMatch = matchTeamName(game.home_team, names);
-  const awayMatch = matchTeamName(game.away_team, names);
-  if (!homeMatch || !awayMatch) return null;
-  const home = findTeamByOurName(teams, homeMatch);
-  const away = findTeamByOurName(teams, awayMatch);
-  if (!home?.teamId || !away?.teamId) return null;
-  return { home, away };
+  if (names.length > 0) {
+    const homeMatch = matchTeamName(game.home_team, names);
+    const awayMatch = matchTeamName(game.away_team, names);
+    if (homeMatch && awayMatch) {
+      const home = findTeamByOurName(teams, homeMatch);
+      const away = findTeamByOurName(teams, awayMatch);
+      if (home?.teamId && away?.teamId) return { home, away };
+    }
+  }
+  const home = team2026RowFromOddsName(game.home_team);
+  const away = team2026RowFromOddsName(game.away_team);
+  if (home?.teamId && away?.teamId) return { home, away };
+  return null;
 }
 
 const BettingAssistantPage = () => {
@@ -95,11 +102,18 @@ const BettingAssistantPage = () => {
     staleTime: 60_000,
   });
 
-  const { data: teams = [] } = useQuery({
+  const teamsQ = useQuery({
     queryKey: ["teams-2026", "M"],
     queryFn: () => fetchTeams2026("M"),
     staleTime: 60 * 60 * 1000,
+    retry: (failureCount, err) => {
+      const s = String((err as Error)?.message ?? "");
+      if (/\b(503|502|504)\b/.test(s)) return failureCount < 10;
+      return failureCount < 3;
+    },
+    retryDelay: (attempt) => Math.min(1500 * 2 ** attempt, 30_000),
   });
+  const { data: teams = [] } = teamsQ;
 
   const {
     data: oddsMeta,
@@ -132,16 +146,15 @@ const BettingAssistantPage = () => {
         const lo = Math.min(res.home.teamId, res.away.teamId);
         const hi = Math.max(res.home.teamId, res.away.teamId);
         const p = await fetchMatchupStandardProb(lo, hi, "M");
-        if (p == null) continue;
         const homeIsLo = res.home.teamId === lo;
-        const homeProb = homeIsLo ? p : 1 - p;
-        const awayProb = homeIsLo ? 1 - p : p;
+        const homeProb = p == null ? null : homeIsLo ? p : 1 - p;
+        const awayProb = p == null ? null : homeIsLo ? 1 - p : p;
         out.push({ game, home: res.home, away: res.away, homeProb, awayProb });
         if (out.length >= 24) break;
       }
       return out;
     },
-    enabled: teams.length > 0 && oddsMeta !== undefined,
+    enabled: oddsMeta !== undefined,
   });
 
   const filteredBoard = useMemo(
@@ -706,6 +719,16 @@ const BettingAssistantPage = () => {
                 Hot teams get +1.5% win-prob boost; likely-luck teams get -1.5% (capped), then EV recalculates.
               </div>
             </div>
+          ) : null}
+          {teamsQ.isError ? (
+            <Alert variant="destructive" className="border-red-500/40">
+              <AlertTitle>Team list from API failed</AlertTitle>
+              <AlertDescription className="text-xs">
+                {(teamsQ.error as Error)?.message ?? "Unknown error"}. Using bundled 2026 team IDs for matchups. Check{" "}
+                <code className="text-foreground">VITE_API_BASE_URL</code> and that the backend reports{" "}
+                <code className="text-foreground">ready_m</code> on <code className="text-foreground">/api/health</code>.
+              </AlertDescription>
+            </Alert>
           ) : null}
           {!hasOddsKey ? (
             <Alert className="border-amber-500/40 bg-amber-500/10">

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Response
 
 from api.routes.models.schemas import (
     BracketPickRequest,
@@ -197,6 +197,7 @@ def bracket_favorite_picks(request: Request, gender: str = "M", chaos: bool = Fa
 @router.get("/bracket/first-round")
 def first_round_matchups(
     request: Request,
+    response: Response,
     season: int = 2026,
     gender: str = "M",
 ) -> FirstRoundMatchupsResponse:
@@ -222,6 +223,7 @@ def first_round_matchups(
     cache_key = (str(gender).upper().strip(), season_i)
     cached = cache.get(cache_key)
     if cached is not None:
+        response.headers["Cache-Control"] = "public, max-age=300"
         return FirstRoundMatchupsResponse(matchupsByRegion=cached)
 
     slots_df = pipeline.slots_df
@@ -342,6 +344,7 @@ def first_round_matchups(
         by_region[key].sort(key=_r1_first_round_pod_sort_key)
 
     cache[cache_key] = by_region
+    response.headers["Cache-Control"] = "public, max-age=300"
     return FirstRoundMatchupsResponse(matchupsByRegion=by_region)
 
 

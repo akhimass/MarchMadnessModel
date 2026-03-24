@@ -23,11 +23,14 @@ export function useLiveScores(gender: 'M' | 'W', date?: string) {
     },
     refetchInterval: (query) => {
       const games = query.state.data;
-      if (!games) return 30_000;
+      if (!games) return 60_000;
       const hasLive = games.some((g) => g.state === 'in');
+      // Poll every 30s during live games, every 5 min otherwise
       return hasLive ? 30_000 : 5 * 60_000;
     },
-    staleTime: 10_000,
+    // Don't re-fetch on tab focus — the interval handles freshness
+    refetchOnWindowFocus: false,
+    staleTime: 30_000,
   });
 }
 
@@ -89,8 +92,10 @@ export function useMarchMadnessCompletedHistory(gender: 'M' | 'W') {
       const raw = await fetchAllTournamentResults(gender);
       return filterMarchMadnessGames(raw, gender, womenTeams);
     },
-    staleTime: 60_000,
-    refetchInterval: 120_000,
+    // Completed game history doesn't change often — 5 min stale, 10 min refetch
+    staleTime: 5 * 60_000,
+    refetchInterval: 10 * 60_000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -107,8 +112,9 @@ export function useTournamentResults(gender: 'M' | 'W') {
   return useQuery({
     queryKey: ['tournament-results', gender],
     queryFn: () => fetchAllTournamentResults(gender),
-    refetchInterval: 60_000,
-    staleTime: 30_000,
+    staleTime: 5 * 60_000,
+    refetchInterval: 10 * 60_000,
+    refetchOnWindowFocus: false,
   });
 }
 

@@ -13,6 +13,8 @@ export function useBracketMatchupsForPicks(picks: Record<string, number>, gender
   const { data: first, isLoading: loadingFirst } = useQuery({
     queryKey: ["first-round", gender],
     queryFn: () => fetchFirstRoundMatchupsTyped(gender),
+    staleTime: 5 * 60_000,   // First-round matchups are static — cache for 5 min
+    refetchOnWindowFocus: false,
   });
 
   const postQueries = useQueries({
@@ -20,6 +22,8 @@ export function useBracketMatchupsForPicks(picks: Record<string, number>, gender
       queryKey: ["round-matchups", stage, gender, picks],
       queryFn: () => fetchRoundMatchups(stage, gender, picks, 2026),
       enabled: Object.keys(picks).length > 0,
+      staleTime: 2 * 60_000,
+      refetchOnWindowFocus: false,
     })),
   });
 

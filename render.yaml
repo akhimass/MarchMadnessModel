@@ -1,12 +1,18 @@
 # Render Blueprint — build must NOT use `git lfs pull` (git-lfs CLI is not installed on build workers).
 # GitHub LFS files are fetched during `git clone` / checkout on Render.
 # https://render.com/docs/yaml-spec
+#
+# Cold starts: first boot runs load_data (fast) then build_features (CPU-heavy, often minutes on free tier).
+# `/api/teams` and `/api/scoreboard` unblock after CSV load; `/api/matchup` needs `ready_m` from /api/health.
+# Use a paid instance or bump RAM/CPU if build_features exceeds Render health-check patience.
 services:
   - type: web
     name: march-madness-api
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn api.server:app --host 0.0.0.0 --port $PORT
+    startCommand: uvicorn api.server:app --host 0.0.0.0 --port $PORT --workers 2
+    # Render pings this path to keep the service warm and detect readiness faster
+    healthCheckPath: /api/health
     envVars:
       # From `python scripts/export_models_for_deploy.py` — avoids training on every cold start
       - key: STANDARD_MODEL_PATH
@@ -16,3 +22,8 @@ services:
       # Skip loading ~6M-row MMasseyOrdinals.csv on boot (minutes → seconds on small instances)
       - key: SKIP_MASSEY_ORDINALS_API
         value: "1"
+      # REQUIRED: Set to your Vercel frontend URL so CORS works in production.
+      # Example value: https://march-madness-insight.vercel.app
+      # Without this, the backend defaults to localhost-only CORS and blocks your Vercel frontend.
+      - key: CORS_ORIGINS
+        sync: false

@@ -6,14 +6,16 @@ from __future__ import annotations
 import html
 import json
 import os
+import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
 import httpx
 import pandas as pd
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import JSONResponse
 
 from api.lib.espn_kaggle_resolve import (
     NAME_BY_KAGGLE_ID,
@@ -22,6 +24,25 @@ from api.lib.espn_kaggle_resolve import (
 )
 
 router = APIRouter(prefix="/api", tags=["scoreboard"])
+
+# ── In-memory scoreboard cache ────────────────────────────────────────────────
+# Keyed by "{gender}:{yyyymmdd}". Prevents N parallel frontend requests for the
+# same date from each independently hammering the external NCAA / henrygd APIs.
+_scoreboard_cache: Dict[str, Tuple[float, Dict[str, Any]]] = {}
+_CACHE_TTL_LIVE: float = 20.0        # 20 s while games are in progress
+_CACHE_TTL_FINAL: float = 120.0      # 2 min once all games are done
+_CACHE_TTL_FALLBACK: float = 300.0   # 5 min for cache-fallback responses (static data)
+
+
+def _cache_ttl(payload: Dict[str, Any]) -> float:
+    source = payload.get("source", "")
+    if source == "cache-fallback":
+        return _CACHE_TTL_FALLBACK
+    games = payload.get("games") or []
+    if any(g.get("status") in ("live", "halftime") for g in games):
+        return _CACHE_TTL_LIVE
+    return _CACHE_TTL_FINAL
+
 
 NCAA_M_SCOREBOARD = (
     "https://data.ncaa.com/casablanca/scoreboard/basketball-men/d1/{yyyy}/{mm}/{dd}/scoreboard.json"
@@ -323,73 +344,102 @@ async def get_live_scoreboard(
     dates: Optional[str] = Query(None, description="YYYYMMDD"),
     gender: str = Query("M", description="M or W"),
     allow_fallback: bool = Query(True, description="When false, do not use cache fallback"),
-) -> Dict[str, Any]:
+) -> JSONResponse:
     dates = _normalize_dates(dates) or _today_et_yyyymmdd()
     g = (gender or "M").upper().strip()
+
+    # ── Serve from cache when still fresh ────────────────────────────────────
+    cache_key = f"{g}:{dates}"
+    now = time.monotonic()
+    cached_entry = _scoreboard_cache.get(cache_key)
+    if cached_entry is not None:
+        ts, cached_payload = cached_entry
+        ttl = _cache_ttl(cached_payload)
+        if now - ts < ttl:
+            return JSONResponse(
+                content=cached_payload,
+                headers={"X-Cache": "HIT", "Cache-Control": "public, max-age=15"},
+            )
+
     debug: Dict[str, Any] = {"attempted": [], "used_fallback": False}
 
-    # Primary source: direct NCAA scoreboard JSON
+    # ── Primary: direct NCAA scoreboard JSON (2 s timeout) ───────────────────
     ncaa_url = _fmt_ncaa_url(dates, gender=g)
     if ncaa_url:
         debug["attempted"].append("ncaa-data")
         try:
-            async with httpx.AsyncClient(timeout=5.0) as client:
+            async with httpx.AsyncClient(timeout=2.5) as client:
                 nr = await client.get(ncaa_url)
             if nr.status_code == 200:
                 parsed = _parse_ncaa_scoreboard(nr.json(), dates, gender=g)
                 if parsed:
-                    return {
+                    result: Dict[str, Any] = {
                         "games": parsed,
                         "date": dates or "",
                         "gender": g,
                         "source": "ncaa-data",
                         "debug": debug,
                     }
+                    _scoreboard_cache[cache_key] = (now, result)
+                    return JSONResponse(
+                        content=result,
+                        headers={"X-Cache": "MISS", "Cache-Control": "public, max-age=15"},
+                    )
             else:
                 debug["ncaa_status"] = nr.status_code
         except Exception as ne:
             debug["ncaa_error"] = str(ne)
 
-    # Secondary source: henrygd/ncaa-api proxy (if available)
+    # ── Secondary: henrygd/ncaa-api proxy (2 s timeout) ─────────────────────
     henrygd_errors: List[str] = []
     for hu in _fmt_henrygd_candidates(dates, gender=g):
         debug["attempted"].append("henrygd")
         try:
-            async with httpx.AsyncClient(timeout=5.0) as client:
+            async with httpx.AsyncClient(timeout=2.5) as client:
                 hr = await client.get(hu)
             if hr.status_code != 200:
                 henrygd_errors.append(f"{hu} status={hr.status_code}")
                 continue
             payload = hr.json()
-            # Some wrappers nest payload under `data`.
             raw = payload.get("data") if isinstance(payload, dict) and isinstance(payload.get("data"), dict) else payload
             if isinstance(raw, dict):
                 parsed = _parse_ncaa_scoreboard(raw, dates, gender=g)
                 if parsed:
-                    return {
+                    result = {
                         "games": parsed,
                         "date": dates or "",
                         "gender": g,
                         "source": "henrygd-ncaa-api",
                         "debug": debug,
                     }
+                    _scoreboard_cache[cache_key] = (now, result)
+                    return JSONResponse(
+                        content=result,
+                        headers={"X-Cache": "MISS", "Cache-Control": "public, max-age=15"},
+                    )
         except Exception as he:
             henrygd_errors.append(f"{hu} error={he}")
     if henrygd_errors:
         debug["henrygd_errors"] = henrygd_errors
 
+    # ── Fallback: local results cache ────────────────────────────────────────
     games: List[Dict[str, Any]] = []
     if g == "M" and bool(allow_fallback):
         debug["used_fallback"] = True
         games = _fallback_games_from_cache(dates)
 
-    return {
+    result = {
         "games": games,
         "date": str(dates or ""),
         "gender": g,
         "source": "cache-fallback" if g == "M" else "unavailable",
         "debug": debug,
     }
+    _scoreboard_cache[cache_key] = (now, result)
+    return JSONResponse(
+        content=result,
+        headers={"X-Cache": "MISS", "Cache-Control": "public, max-age=30"},
+    )
 
 
 @router.get("/scoreboard/audit")

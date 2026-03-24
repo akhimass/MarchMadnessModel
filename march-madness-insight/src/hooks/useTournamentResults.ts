@@ -137,7 +137,9 @@ export function useTournamentResults(gender: "M" | "W") {
       await syncResultsCache(games);
       return games;
     },
-    staleTime: 60_000,
-    refetchInterval: 120_000,
+    // Historical completed games rarely change — long stale keeps request count low
+    staleTime: 5 * 60_000,
+    refetchInterval: 10 * 60_000,
+    refetchOnWindowFocus: false,
   });
 }

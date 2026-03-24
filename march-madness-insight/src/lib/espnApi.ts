@@ -154,7 +154,14 @@ export async function fetchScoreboard(
     const ymd = date.replace(/-/g, "");
     params.set("dates", ymd);
   }
-  const res = await fetch(`${apiBase}/api/scoreboard/live?${params}`);
+  const ctrl = new AbortController();
+  const t = window.setTimeout(() => ctrl.abort(), 30_000);
+  let res: Response;
+  try {
+    res = await fetch(`${apiBase}/api/scoreboard/live?${params}`, { signal: ctrl.signal });
+  } finally {
+    window.clearTimeout(t);
+  }
   if (!res.ok) throw new Error(`Scoreboard proxy ${res.status}`);
   const data = (await res.json()) as { games?: BackendScoreboardGame[] };
   return (data.games || []).map((g) => mapBackendGame(g, gender));
@@ -279,8 +286,19 @@ export const TOURNAMENT_DATES = {
   championship: ["20260406"],
 };
 
+function _todayEtYyyymmdd(): string {
+  const now = new Date();
+  const et = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  const y = et.getFullYear();
+  const m = String(et.getMonth() + 1).padStart(2, '0');
+  const d = String(et.getDate()).padStart(2, '0');
+  return `${y}${m}${d}`;
+}
+
 export async function fetchAllTournamentResults(gender: 'M' | 'W'): Promise<LiveGame[]> {
-  const allDates = Object.values(TOURNAMENT_DATES).flat();
+  // Only fetch dates up to today — future rounds have no games, no point hitting the backend
+  const today = _todayEtYyyymmdd();
+  const allDates = Object.values(TOURNAMENT_DATES).flat().filter(d => d <= today);
   const results = await Promise.allSettled(
     allDates.map(d => fetchScoreboard(gender, d))
   );
