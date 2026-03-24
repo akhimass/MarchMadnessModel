@@ -7,3 +7,9 @@ services:
     runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn api.server:app --host 0.0.0.0 --port $PORT
+    envVars:
+      # From `python scripts/export_models_for_deploy.py` — avoids training on every cold start
+      - key: STANDARD_MODEL_PATH
+        value: ./artifacts/standard.pkl
+      - key: CHAOS_MODEL_PATH
+        value: ./artifacts/chaos.pkl
