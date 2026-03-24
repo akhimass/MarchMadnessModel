@@ -1,0 +1,9 @@
+# Render Blueprint — build must NOT use `git lfs pull` (git-lfs CLI is not installed on build workers).
+# GitHub LFS files are fetched during `git clone` / checkout on Render.
+# https://render.com/docs/yaml-spec
+services:
+  - type: web
+    name: march-madness-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api.server:app --host 0.0.0.0 --port $PORT
