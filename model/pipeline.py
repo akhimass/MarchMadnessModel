@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import pickle
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Tuple
@@ -297,10 +298,13 @@ class MarchMadnessPipeline:
                 stats_dict["elo"] = float(self.elo_system.get_rating(int(tid), int(season)))
                 self.team_stats[(int(season), tid)] = stats_dict
 
-        # 4) Ordinal-rank features (MMasseyOrdinals)
-        # Load Massey Ordinals if available
+        # 4) Ordinal-rank features (MMasseyOrdinals) — multi-million rows; optional skip on deploy.
         ordinals_path = DATA_DIR / "MMasseyOrdinals.csv"
-        if ordinals_path.exists():
+        skip_ord = os.getenv("SKIP_MASSEY_ORDINALS_API", "").strip().lower() in ("1", "true", "yes", "on")
+        if skip_ord:
+            self.ordinal_features = None
+            print("  SKIP_MASSEY_ORDINALS_API set — skipping MMasseyOrdinals load (faster API boot).")
+        elif ordinals_path.exists():
             print("  Loading Massey Ordinals (50+ expert systems)...")
             from model.features.ordinals import MasseyOrdinalsFeatures
 

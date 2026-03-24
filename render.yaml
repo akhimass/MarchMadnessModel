@@ -13,3 +13,6 @@ services:
         value: ./artifacts/standard.pkl
       - key: CHAOS_MODEL_PATH
         value: ./artifacts/chaos.pkl
+      # Skip loading ~6M-row MMasseyOrdinals.csv on boot (minutes → seconds on small instances)
+      - key: SKIP_MASSEY_ORDINALS_API
+        value: "1"
