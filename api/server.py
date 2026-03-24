@@ -23,6 +23,18 @@ from api.routes.predictions import router as predictions_router
 from api.routes.teams import router as teams_router
 from model.pipeline import MarchMadnessPipeline
 
+# Repository root (parent of `api/`) — always use for relative DATA_DIR / artifact paths on Render.
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _resolve_repo_path(p: str) -> Path:
+    """Resolve env paths relative to repo root so ./artifacts works even if cwd != repo root."""
+    p = (p or ".").strip()
+    q = Path(p)
+    if q.is_absolute():
+        return q
+    return (_REPO_ROOT / q).resolve()
+
 
 def _get_env(name: str, default: Optional[str] = None) -> Optional[str]:
     v = os.getenv(name)
@@ -70,25 +82,35 @@ def _pipeline_bootstrap(app: FastAPI) -> None:
     """Men's pipeline first (unblocks most UI), then women's in a second thread."""
     try:
         data_dir = _get_env("DATA_DIR", "./data") or "./data"
-        standard_model_path = _get_env("STANDARD_MODEL_PATH", "")
-        chaos_model_path = _get_env("CHAOS_MODEL_PATH", "")
-        use_pickles = bool(
-            standard_model_path
-            and chaos_model_path
-            and Path(standard_model_path).exists()
-            and Path(chaos_model_path).exists()
-        )
+        data_dir_resolved = str(_resolve_repo_path(data_dir))
+        standard_model_path = _get_env("STANDARD_MODEL_PATH", "") or ""
+        chaos_model_path = _get_env("CHAOS_MODEL_PATH", "") or ""
+        std_p = _resolve_repo_path(standard_model_path) if standard_model_path else None
+        chaos_p = _resolve_repo_path(chaos_model_path) if chaos_model_path else None
+        use_pickles = bool(std_p and chaos_p and std_p.is_file() and chaos_p.is_file())
 
-        pipe_m = MarchMadnessPipeline(data_dir=data_dir, gender="M")
+        print(
+            f"[bootstrap] cwd={os.getcwd()} repo_root={_REPO_ROOT} "
+            f"use_pickles={use_pickles} std={std_p} chaos={chaos_p} "
+            f"skip_ordinals={os.getenv('SKIP_MASSEY_ORDINALS_API', '')!r}"
+        )
+        if standard_model_path and not use_pickles:
+            print(
+                f"[bootstrap] WARNING: pickle paths not found on disk — will train from scratch. "
+                f"resolved std exists={std_p.is_file() if std_p else False} "
+                f"chaos exists={chaos_p.is_file() if chaos_p else False}"
+            )
+
+        pipe_m = MarchMadnessPipeline(data_dir=data_dir_resolved, gender="M")
         pipe_m.load_data()
         pipe_m.build_features()
 
-        if use_pickles:
+        if use_pickles and std_p and chaos_p:
             from model.training.standard_model import MarchMadnessEnsemble
             from model.training.chaos_model import ChaosModel
 
-            pipe_m.standard_model = MarchMadnessEnsemble.load(standard_model_path)
-            pipe_m.chaos_model = ChaosModel.load(chaos_model_path)
+            pipe_m.standard_model = MarchMadnessEnsemble.load(str(std_p))
+            pipe_m.chaos_model = ChaosModel.load(str(chaos_p))
         else:
             pipe_m.train()
 
@@ -99,7 +121,7 @@ def _pipeline_bootstrap(app: FastAPI) -> None:
 
         threading.Thread(
             target=_bootstrap_w_pipeline,
-            args=(app, data_dir, use_pickles),
+            args=(app, data_dir_resolved, use_pickles),
             name="pipeline-w-bootstrap",
             daemon=True,
         ).start()
@@ -234,9 +256,6 @@ app.include_router(scoreboard_router)
 app.include_router(model_stats_router)
 app.include_router(narrative_router)
 app.include_router(analyzer_router)
-
-_REPO_ROOT = Path(__file__).resolve().parents[1]
-
 
 def _spa_dist_with_index_html() -> Optional[Path]:
     """Only treat as a built SPA if `index.html` exists (empty `web/dist/.gitkeep` is not a SPA)."""
