@@ -1,0 +1,5 @@
+{
+  "season": 2026,
+  "notes": "Optional overrides for women's bracket (slot token -> TeamID).",
+  "slots": {}
+}

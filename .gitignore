@@ -1,6 +1,10 @@
-# Model / Kaggle data at repository root only (not frontend src/data)
-/data/
-*.csv
+# Model / Kaggle data at repository root — tracked for Render (see data/*.csv)
+# Too large for GitHub (>100MB); ordinal features skip if missing on deploy
+data/MMasseyOrdinals.csv
+
+# Stray CSV dumps at repo root only (not data/*.csv)
+/*.csv
+
 __pycache__/
 .env
 node_modules/

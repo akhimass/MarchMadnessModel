@@ -1,0 +1,5 @@
+{
+  "season": 2026,
+  "notes": "Optional slot -> winner TeamID (Kaggle) overrides. Merged with MNCAATourneyCompactResults when present. Example: \"R1W1\": 1181",
+  "slots": {}
+}

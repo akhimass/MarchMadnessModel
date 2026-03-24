@@ -1,0 +1,1838 @@
+{
+  "injuries": {
+    "1181": {
+      "raw_injuries": [
+        {
+          "player": "C. Foster",
+          "pos": "G",
+          "status": "Out - Foot"
+        },
+        {
+          "player": "P. Ngongba II",
+          "pos": "C",
+          "status": "Out - Foot"
+        },
+        {
+          "player": "I. Ufochukwu",
+          "pos": "C",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "S. Wilkins",
+          "pos": "G",
+          "status": "Out - Redshirt"
+        }
+      ],
+      "covers_name_used": "Duke",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRFrCUPhktNLh4cACK'}",
+      "confidence": "low"
+    },
+    "1163": {
+      "raw_injuries": [],
+      "covers_name_used": "Connecticut",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No injuries reported.",
+      "confidence": "high"
+    },
+    "1277": {
+      "raw_injuries": [
+        {
+          "player": "D. Ugochukwu",
+          "pos": "G",
+          "status": "Out - Foot"
+        },
+        {
+          "player": "K. Glenn",
+          "pos": "F",
+          "status": "Out - Knee"
+        }
+      ],
+      "covers_name_used": "Michigan St",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRGJjc1aMNETmuMHUo'}",
+      "confidence": "low"
+    },
+    "1242": {
+      "raw_injuries": [
+        {
+          "player": "J. Cross",
+          "pos": "F",
+          "status": "Questionable - Undisclosed"
+        },
+        {
+          "player": "C. Allen",
+          "pos": "G",
+          "status": "Questionable - Undisclosed"
+        },
+        {
+          "player": "W. Thengvall",
+          "pos": "G",
+          "status": "Questionable - Undisclosed"
+        }
+      ],
+      "covers_name_used": "Kansas",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No ruled-out players (questionable-only/no-impact).",
+      "confidence": "high"
+    },
+    "1385": {
+      "raw_injuries": [
+        {
+          "player": "K. Odih",
+          "pos": "G",
+          "status": "Questionable - Leg"
+        },
+        {
+          "player": "C. Pohto",
+          "pos": "G",
+          "status": "Out - Hip"
+        },
+        {
+          "player": "I. Suljanovic",
+          "pos": "F",
+          "status": "Out - Knee"
+        }
+      ],
+      "covers_name_used": "St John's",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRGaMYKhfAQLog6Tkc'}",
+      "confidence": "low"
+    },
+    "1257": {
+      "raw_injuries": [
+        {
+          "player": "M. Brown Jr.",
+          "pos": "G",
+          "status": "Out - Back"
+        }
+      ],
+      "covers_name_used": "Louisville",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRGozgYbJLyYUUn1b1'}",
+      "confidence": "low"
+    },
+    "1417": {
+      "raw_injuries": [
+        {
+          "player": "T. Bilodeau",
+          "pos": "F",
+          "status": "Questionable - Knee"
+        },
+        {
+          "player": "E. Manjikian",
+          "pos": "F",
+          "status": "Questionable - Undisclosed"
+        }
+      ],
+      "covers_name_used": "UCLA",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No ruled-out players (questionable-only/no-impact).",
+      "confidence": "high"
+    },
+    "1326": {
+      "raw_injuries": [
+        {
+          "player": "M. Herro",
+          "pos": "G",
+          "status": "Out - Redshirt"
+        },
+        {
+          "player": "J. Ojianwuna",
+          "pos": "F",
+          "status": "Out - Knee"
+        }
+      ],
+      "covers_name_used": "Ohio St",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRH6MxWzkxEbRMTSow'}",
+      "confidence": "low"
+    },
+    "1395": {
+      "raw_injuries": [
+        {
+          "player": "M. Diallo",
+          "pos": "C",
+          "status": "Out - Knee"
+        }
+      ],
+      "covers_name_used": "Texas Christian",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRHNUanegzJrNbne1d'}",
+      "confidence": "low"
+    },
+    "1416": {
+      "raw_injuries": [
+        {
+          "player": "T. Jones",
+          "pos": "G",
+          "status": "Questionable - Undisclosed"
+        }
+      ],
+      "covers_name_used": "UCF",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No ruled-out players (questionable-only/no-impact).",
+      "confidence": "high"
+    },
+    "1378": {
+      "raw_injuries": [
+        {
+          "player": "D. Green",
+          "pos": "F",
+          "status": "Out - Achilles"
+        },
+        {
+          "player": "X. Brown",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        }
+      ],
+      "covers_name_used": "South Florida",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRHdrYrUu974pqrciJ'}",
+      "confidence": "low"
+    },
+    "1320": {
+      "raw_injuries": [
+        {
+          "player": "C. Courbat",
+          "pos": "F",
+          "status": "Questionable - Undisclosed"
+        },
+        {
+          "player": "M. Dubravcic",
+          "pos": "F",
+          "status": "Questionable - Undisclosed"
+        },
+        {
+          "player": "C. Courbat",
+          "pos": "G",
+          "status": "Questionable - Undisclosed"
+        }
+      ],
+      "covers_name_used": "Northern Iowa",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No ruled-out players (questionable-only/no-impact).",
+      "confidence": "high"
+    },
+    "1465": {
+      "raw_injuries": [],
+      "covers_name_used": "Cal Baptist",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No injuries reported.",
+      "confidence": "high"
+    },
+    "1295": {
+      "raw_injuries": [],
+      "covers_name_used": "N Dakota St",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No injuries reported.",
+      "confidence": "high"
+    },
+    "1202": {
+      "raw_injuries": [],
+      "covers_name_used": "Furman",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No injuries reported.",
+      "confidence": "high"
+    },
+    "1373": {
+      "raw_injuries": [
+        {
+          "player": "M. Jackson",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "T. Jones",
+          "pos": "F",
+          "status": "Out - Back"
+        },
+        {
+          "player": "T. Goodrick",
+          "pos": "F",
+          "status": "Out - Knee"
+        },
+        {
+          "player": "O. Schlager",
+          "pos": "G",
+          "status": "Out - Upper Body"
+        },
+        {
+          "player": "R. Ducharme",
+          "pos": "G",
+          "status": "Out - Shoulder"
+        }
+      ],
+      "covers_name_used": "Siena",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRHuj42ejUDvk9UP1u'}",
+      "confidence": "low"
+    },
+    "1196": {
+      "raw_injuries": [
+        {
+          "player": "D. Green",
+          "pos": "F",
+          "status": "Out - Achilles"
+        },
+        {
+          "player": "X. Brown",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        }
+      ],
+      "covers_name_used": "Florida",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRJAMSg74fGSUEBX3L'}",
+      "confidence": "low"
+    },
+    "1222": {
+      "raw_injuries": [
+        {
+          "player": "K. Jefferson",
+          "pos": "G",
+          "status": "Out - Knee"
+        },
+        {
+          "player": "B. Jackson",
+          "pos": "G",
+          "status": "Out - Redshirt"
+        }
+      ],
+      "covers_name_used": "Houston",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRJPW2oj4ngnzAQFU2'}",
+      "confidence": "low"
+    },
+    "1228": {
+      "raw_injuries": [
+        {
+          "player": "T. Bilic",
+          "pos": "F",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "J. Jakstys",
+          "pos": "C",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "T. Rodgers",
+          "pos": "G",
+          "status": "Out - Knee"
+        }
+      ],
+      "covers_name_used": "Illinois",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRJesMvPJWMoBZBV9m'}",
+      "confidence": "low"
+    },
+    "1304": {
+      "raw_injuries": [
+        {
+          "player": "U. Jarusevicius",
+          "pos": "F",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "C. Essegian",
+          "pos": "G",
+          "status": "Out - Ankle"
+        },
+        {
+          "player": "H. Burt",
+          "pos": "F",
+          "status": "Out - Undisclosed"
+        }
+      ],
+      "covers_name_used": "Nebraska",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRJuW2SyQEUqxHxJnV'}",
+      "confidence": "low"
+    },
+    "1435": {
+      "raw_injuries": [
+        {
+          "player": "G. Kimble III",
+          "pos": "G",
+          "status": "Out - Knee"
+        }
+      ],
+      "covers_name_used": "Vanderbilt",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRK9tNMWCpLcZkCj8U'}",
+      "confidence": "low"
+    },
+    "1314": {
+      "raw_injuries": [
+        {
+          "player": "C. Wilson",
+          "pos": "F",
+          "status": "Out - Thumb"
+        },
+        {
+          "player": "J. Brown",
+          "pos": "C",
+          "status": "Out - Foot"
+        },
+        {
+          "player": "I. Matlekovic",
+          "pos": "C",
+          "status": "Out - Hand"
+        }
+      ],
+      "covers_name_used": "North Carolina",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRKr4Q4tYCSgQCHz4x'}",
+      "confidence": "low"
+    },
+    "1388": {
+      "raw_injuries": [
+        {
+          "player": "C. Bennett",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "J. Gardner",
+          "pos": "F",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "T. MacLean",
+          "pos": "F",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "K. Gad",
+          "pos": "F",
+          "status": "Out - Shoulder"
+        }
+      ],
+      "covers_name_used": "St Mary's CA",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRL5wXQP1yJS8gRRkD'}",
+      "confidence": "low"
+    },
+    "1155": {
+      "raw_injuries": [
+        {
+          "player": "C. Welling",
+          "pos": "F",
+          "status": "Questionable - Knee"
+        },
+        {
+          "player": "T. Steinour",
+          "pos": "F",
+          "status": "Questionable - Undisclosed"
+        },
+        {
+          "player": "Z. Foster",
+          "pos": "G",
+          "status": "Out - Knee"
+        }
+      ],
+      "covers_name_used": "Clemson",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRLdgit6rqbaPPK1Vu'}",
+      "confidence": "low"
+    },
+    "1234": {
+      "raw_injuries": [
+        {
+          "player": "P. McCollum",
+          "pos": "G",
+          "status": "Out - Foot"
+        }
+      ],
+      "covers_name_used": "Iowa",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRLspG6bq49GhnqPoy'}",
+      "confidence": "low"
+    },
+    "1401": {
+      "raw_injuries": [
+        {
+          "player": "N. Mundey",
+          "pos": "G",
+          "status": "Out - Redshirt"
+        },
+        {
+          "player": "M. Mgbako",
+          "pos": "F",
+          "status": "Out - Foot"
+        }
+      ],
+      "covers_name_used": "Texas A&M",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRM8CXTfnzKuZbKH5n'}",
+      "confidence": "low"
+    },
+    "1433": {
+      "raw_injuries": [
+        {
+          "player": "A. Hansberry",
+          "pos": "F",
+          "status": "Questionable - Undisclosed"
+        },
+        {
+          "player": "S. Jones",
+          "pos": "F",
+          "status": "Out - Foot"
+        },
+        {
+          "player": "S. Peterkin",
+          "pos": "G",
+          "status": "Questionable - Undisclosed"
+        }
+      ],
+      "covers_name_used": "Virginia Commonwealth",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRMNLRJsCBscJbaqvw'}",
+      "confidence": "low"
+    },
+    "1270": {
+      "raw_injuries": [],
+      "covers_name_used": "McNeese St",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No injuries reported.",
+      "confidence": "high"
+    },
+    "1407": {
+      "raw_injuries": [
+        {
+          "player": "J. Gilgeous-Glasgow",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        }
+      ],
+      "covers_name_used": "Troy",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRMbyHzSLf8mX7rm3s'}",
+      "confidence": "low"
+    },
+    "1335": {
+      "raw_injuries": [
+        {
+          "player": "T. Power",
+          "pos": "F",
+          "status": "Questionable - Illness"
+        },
+        {
+          "player": "B. Foster",
+          "pos": "F",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "P. Kamin",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "E. Roberts",
+          "pos": "G",
+          "status": "Out - Concussion"
+        },
+        {
+          "player": "D. Williams",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "R. Altman",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        }
+      ],
+      "covers_name_used": "Penn",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRMr7JpxMr44nDr8gY'}",
+      "confidence": "low"
+    },
+    "1225": {
+      "raw_injuries": [
+        {
+          "player": "T. Yearout",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "T. Linhardt",
+          "pos": "F",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "K. Gonzalez",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "W. Jenson",
+          "pos": "F",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "T. Jenkins",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        }
+      ],
+      "covers_name_used": "Idaho",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRN6VabSWgcqwDeAkU'}",
+      "confidence": "low"
+    },
+    "1250": {
+      "raw_injuries": [
+        {
+          "player": "B. Momah",
+          "pos": "F",
+          "status": "Questionable - Undisclosed"
+        },
+        {
+          "player": "C. Burrows",
+          "pos": "G",
+          "status": "Questionable - Undisclosed"
+        }
+      ],
+      "covers_name_used": "Lehigh",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No ruled-out players (questionable-only/no-impact).",
+      "confidence": "high"
+    },
+    "1341": {
+      "raw_injuries": [
+        {
+          "player": "M. Bryant",
+          "pos": "F",
+          "status": "Questionable - Undisclosed"
+        },
+        {
+          "player": "R. Bolton",
+          "pos": "C",
+          "status": "Questionable - Undisclosed"
+        }
+      ],
+      "covers_name_used": "Prairie View",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No ruled-out players (questionable-only/no-impact).",
+      "confidence": "high"
+    },
+    "1276": {
+      "raw_injuries": [
+        {
+          "player": "L. Cason",
+          "pos": "G",
+          "status": "Out - Knee"
+        },
+        {
+          "player": "W. Grady",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "R. Liburd",
+          "pos": "G",
+          "status": "Out - Redshirt"
+        }
+      ],
+      "covers_name_used": "Michigan",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRNQbeyLJ4Pv71bxVN'}",
+      "confidence": "low"
+    },
+    "1235": {
+      "raw_injuries": [
+        {
+          "player": "X. Mitchell",
+          "pos": "F",
+          "status": "Questionable - Undisclosed"
+        },
+        {
+          "player": "M. Williams",
+          "pos": "G",
+          "status": "Out - Hip"
+        }
+      ],
+      "covers_name_used": "Iowa St",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRNjSKUjMgpULBdNCK'}",
+      "confidence": "low"
+    },
+    "1438": {
+      "raw_injuries": [
+        {
+          "player": "A. Hansberry",
+          "pos": "F",
+          "status": "Questionable - Undisclosed"
+        },
+        {
+          "player": "S. Jones",
+          "pos": "F",
+          "status": "Out - Foot"
+        },
+        {
+          "player": "S. Peterkin",
+          "pos": "G",
+          "status": "Questionable - Undisclosed"
+        }
+      ],
+      "covers_name_used": "Virginia",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRP3J3NYpT4SxMeGHk'}",
+      "confidence": "low"
+    },
+    "1104": {
+      "raw_injuries": [
+        {
+          "player": "A. Holloway",
+          "pos": "G",
+          "status": "Questionable - Personal"
+        },
+        {
+          "player": "K. Bristow",
+          "pos": "F",
+          "status": "Questionable - Undisclosed"
+        },
+        {
+          "player": "D. Hannah",
+          "pos": "G",
+          "status": "Questionable - Undisclosed"
+        },
+        {
+          "player": "C. Onyejiaka",
+          "pos": "C",
+          "status": "Out - Undisclosed"
+        }
+      ],
+      "covers_name_used": "Alabama",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRPKutTtEdgg8bqUPg'}",
+      "confidence": "low"
+    },
+    "1403": {
+      "raw_injuries": [
+        {
+          "player": "J. Toppin",
+          "pos": "F",
+          "status": "Out - Knee"
+        },
+        {
+          "player": "L. Hoover",
+          "pos": "F",
+          "status": "Out - Redshirt"
+        }
+      ],
+      "covers_name_used": "Texas Tech",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRPe1V4ub8HXHjNrWb'}",
+      "confidence": "low"
+    },
+    "1397": {
+      "raw_injuries": [
+        {
+          "player": "C. Phillips",
+          "pos": "F",
+          "status": "Out - Shoulder"
+        }
+      ],
+      "covers_name_used": "Tennessee",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRQ3aAafWN4NKeKoCd'}",
+      "confidence": "low"
+    },
+    "1246": {
+      "raw_injuries": [
+        {
+          "player": "B. Hawthorne",
+          "pos": "F",
+          "status": "Out - Redshirt"
+        },
+        {
+          "player": "J. Lowe",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "J. Quaintance",
+          "pos": "F",
+          "status": "Doubtful - Knee"
+        }
+      ],
+      "covers_name_used": "Kentucky",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRQgGdvJEVVvKczqfz'}",
+      "confidence": "low"
+    },
+    "1208": {
+      "raw_injuries": [
+        {
+          "player": "J. Ross",
+          "pos": "G",
+          "status": "Questionable - Undisclosed"
+        }
+      ],
+      "covers_name_used": "Georgia",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No ruled-out players (questionable-only/no-impact).",
+      "confidence": "high"
+    },
+    "1387": {
+      "raw_injuries": [
+        {
+          "player": "K. Anya",
+          "pos": "F",
+          "status": "Out - Redshirt"
+        }
+      ],
+      "covers_name_used": "St Louis",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRS8qCjqSuhGroRnMP'}",
+      "confidence": "low"
+    },
+    "1365": {
+      "raw_injuries": [
+        {
+          "player": "J. Fontenet II",
+          "pos": "G",
+          "status": "Out - Knee"
+        }
+      ],
+      "covers_name_used": "Santa Clara",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRSQwwDiuNtCjwpGqo'}",
+      "confidence": "low"
+    },
+    "1275": {
+      "raw_injuries": [
+        {
+          "player": "B. Anderson",
+          "pos": "G",
+          "status": "Questionable - Undisclosed"
+        },
+        {
+          "player": "L. Stowers",
+          "pos": "G",
+          "status": "Questionable - Undisclosed"
+        },
+        {
+          "player": "E. Ipsaro",
+          "pos": "G",
+          "status": "Out - Knee"
+        }
+      ],
+      "covers_name_used": "Miami OH",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRSe6BeUy79DHygjCv'}",
+      "confidence": "low"
+    },
+    "1374": {
+      "raw_injuries": [
+        {
+          "player": "B. Edwards",
+          "pos": "G",
+          "status": "Questionable - Ankle"
+        }
+      ],
+      "covers_name_used": "Southern Methodist",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No ruled-out players (questionable-only/no-impact).",
+      "confidence": "high"
+    },
+    "1103": {
+      "raw_injuries": [
+        {
+          "player": "B. James",
+          "pos": "G",
+          "status": "Out - Redshirt"
+        }
+      ],
+      "covers_name_used": "Akron",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRSsyc3HRjsUvkSWhJ'}",
+      "confidence": "low"
+    },
+    "1220": {
+      "raw_injuries": [],
+      "covers_name_used": "Hofstra",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No injuries reported.",
+      "confidence": "high"
+    },
+    "1460": {
+      "raw_injuries": [
+        {
+          "player": "J. Valencia",
+          "pos": "F",
+          "status": "Out - Achilles"
+        },
+        {
+          "player": "T. Rathan-Mayes",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "P. Couisnard",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "J. Ighovodja",
+          "pos": "G",
+          "status": "Questionable - Foot"
+        }
+      ],
+      "covers_name_used": "Wright St",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRT8rPsgfjwHNg7zH6'}",
+      "confidence": "low"
+    },
+    "1398": {
+      "raw_injuries": [
+        {
+          "player": "C. Phillips",
+          "pos": "F",
+          "status": "Out - Shoulder"
+        }
+      ],
+      "covers_name_used": "Tennessee St",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRTRUK48JcNsSin8W2'}",
+      "confidence": "low"
+    },
+    "1224": {
+      "raw_injuries": [
+        {
+          "player": "P. McCollum",
+          "pos": "G",
+          "status": "Out - Foot"
+        }
+      ],
+      "covers_name_used": "Howard",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRTfrAe6HuA7gSAZAu'}",
+      "confidence": "low"
+    },
+    "1420": {
+      "raw_injuries": [],
+      "covers_name_used": "UMBC",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No injuries reported.",
+      "confidence": "high"
+    },
+    "1112": {
+      "raw_injuries": [
+        {
+          "player": "B. James",
+          "pos": "G",
+          "status": "Out - Redshirt"
+        }
+      ],
+      "covers_name_used": "Arizona",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRTzCszaP9RLYj1n2C'}",
+      "confidence": "low"
+    },
+    "1345": {
+      "raw_injuries": [],
+      "covers_name_used": "Purdue",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No injuries reported.",
+      "confidence": "high"
+    },
+    "1211": {
+      "raw_injuries": [
+        {
+          "player": "B. Huff",
+          "pos": "F",
+          "status": "Out - Knee"
+        }
+      ],
+      "covers_name_used": "Gonzaga",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRUGKa1JtiazEZRfwv'}",
+      "confidence": "low"
+    },
+    "1116": {
+      "raw_injuries": [
+        {
+          "player": "N. Pringle",
+          "pos": "F",
+          "status": "Questionable - Undisclosed"
+        },
+        {
+          "player": "K. Knox",
+          "pos": "F",
+          "status": "Out - Undisclosed"
+        }
+      ],
+      "covers_name_used": "Arkansas",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRUWD83aw2y56gZv5u'}",
+      "confidence": "low"
+    },
+    "1458": {
+      "raw_injuries": [
+        {
+          "player": "J. Janicki",
+          "pos": "G",
+          "status": "Out - Wrist"
+        }
+      ],
+      "covers_name_used": "Wisconsin",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRUkb52X3ZGgBHagzk'}",
+      "confidence": "low"
+    },
+    "1140": {
+      "raw_injuries": [
+        {
+          "player": "R. Saunders",
+          "pos": "G",
+          "status": "Out - Knee"
+        },
+        {
+          "player": "X. Staton",
+          "pos": "C",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "K. Perry",
+          "pos": "G",
+          "status": "Out - Redshirt"
+        },
+        {
+          "player": "D. Baker",
+          "pos": "G",
+          "status": "Out - Knee"
+        },
+        {
+          "player": "N. Pickens",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "B. Kozlowski",
+          "pos": "F",
+          "status": "Out - Redshirt"
+        }
+      ],
+      "covers_name_used": "Brigham Young",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRV1xr5qRhWW1AGh9g'}",
+      "confidence": "low"
+    },
+    "1274": {
+      "raw_injuries": [
+        {
+          "player": "T. Maddox",
+          "pos": "F",
+          "status": "Questionable - Undisclosed"
+        },
+        {
+          "player": "M. Allen",
+          "pos": "G",
+          "status": "Out - Illness"
+        }
+      ],
+      "covers_name_used": "Miami FL",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRVG6V5QjwfwyEswon'}",
+      "confidence": "low"
+    },
+    "1437": {
+      "raw_injuries": [
+        {
+          "player": "M. Hodge",
+          "pos": "F",
+          "status": "Out - Knee"
+        }
+      ],
+      "covers_name_used": "Villanova",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRVWyaCbNmWmrGFNPU'}",
+      "confidence": "low"
+    },
+    "1429": {
+      "raw_injuries": [
+        {
+          "player": "J. Patrick",
+          "pos": "G",
+          "status": "Questionable - Undisclosed"
+        },
+        {
+          "player": "B. Faye",
+          "pos": "F",
+          "status": "Out - Leg"
+        }
+      ],
+      "covers_name_used": "Utah St",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRVmrjeeSNEF6U5sGQ'}",
+      "confidence": "low"
+    },
+    "1281": {
+      "raw_injuries": [
+        {
+          "player": "A. Boateng",
+          "pos": "G",
+          "status": "Out - Leg"
+        },
+        {
+          "player": "J. Porter",
+          "pos": "F",
+          "status": "Questionable - Lower Leg"
+        }
+      ],
+      "covers_name_used": "Missouri",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRW6wtTyPBqKde5vou'}",
+      "confidence": "low"
+    },
+    "1301": {
+      "raw_injuries": [
+        {
+          "player": "T. Mirtic",
+          "pos": "F",
+          "status": "Out - Leg"
+        },
+        {
+          "player": "R. Grodin",
+          "pos": "G",
+          "status": "Out - Redshirt"
+        }
+      ],
+      "covers_name_used": "N.C. State",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRWQZFy4qtn66xU9L1'}",
+      "confidence": "low"
+    },
+    "1400": {
+      "raw_injuries": [
+        {
+          "player": "L. Traore",
+          "pos": "F",
+          "status": "Out - Undisclosed"
+        }
+      ],
+      "covers_name_used": "Texas",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRWhR98wSqDzEP79PY'}",
+      "confidence": "low"
+    },
+    "1219": {
+      "raw_injuries": [],
+      "covers_name_used": "High Point",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No injuries reported.",
+      "confidence": "high"
+    },
+    "1218": {
+      "raw_injuries": [
+        {
+          "player": "A. Hunkin-Claytor",
+          "pos": "G",
+          "status": "Out - Toe"
+        },
+        {
+          "player": "T. Cuff",
+          "pos": "G",
+          "status": "Out - Knee"
+        }
+      ],
+      "covers_name_used": "Hawaii",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRWwoLGihZV6BLRV4j'}",
+      "confidence": "low"
+    },
+    "1244": {
+      "raw_injuries": [
+        {
+          "player": "B. Tousignaut",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "C. Clemmons",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        },
+        {
+          "player": "D. Cosby Jr.",
+          "pos": "G",
+          "status": "Out - Undisclosed"
+        }
+      ],
+      "covers_name_used": "Kennesaw",
+      "adjustment": 0.0,
+      "severity": "error",
+      "key_player_out": null,
+      "reasoning": "Scoring error: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZCpRXCBaUWoBEC1chhMS'}",
+      "confidence": "low"
+    },
+    "1474": {
+      "raw_injuries": [],
+      "covers_name_used": "Queens NC",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No injuries reported.",
+      "confidence": "high"
+    },
+    "1254": {
+      "raw_injuries": [],
+      "covers_name_used": "LIU Brooklyn",
+      "adjustment": 0.0,
+      "severity": "none",
+      "key_player_out": null,
+      "reasoning": "No injuries reported.",
+      "confidence": "high"
+    }
+  },
+  "recency": {
+    "1181": {
+      "team_id": 1181,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1163": {
+      "team_id": 1163,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1277": {
+      "team_id": 1277,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1242": {
+      "team_id": 1242,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1385": {
+      "team_id": 1385,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1257": {
+      "team_id": 1257,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1417": {
+      "team_id": 1417,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1326": {
+      "team_id": 1326,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1196": {
+      "team_id": 1196,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1222": {
+      "team_id": 1222,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1228": {
+      "team_id": 1228,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1304": {
+      "team_id": 1304,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1435": {
+      "team_id": 1435,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1314": {
+      "team_id": 1314,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1388": {
+      "team_id": 1388,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1155": {
+      "team_id": 1155,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1276": {
+      "team_id": 1276,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1235": {
+      "team_id": 1235,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1438": {
+      "team_id": 1438,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1104": {
+      "team_id": 1104,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1403": {
+      "team_id": 1403,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1397": {
+      "team_id": 1397,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1246": {
+      "team_id": 1246,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1208": {
+      "team_id": 1208,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1112": {
+      "team_id": 1112,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1345": {
+      "team_id": 1345,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1211": {
+      "team_id": 1211,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1116": {
+      "team_id": 1116,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1458": {
+      "team_id": 1458,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1140": {
+      "team_id": 1140,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1274": {
+      "team_id": 1274,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1437": {
+      "team_id": 1437,
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Search error: Expecting value: line 1 column 1 (char 0)"
+    },
+    "1395": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1416": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1378": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1320": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1465": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1295": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1202": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1373": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1234": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1401": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1433": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1270": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1407": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1335": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1225": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1250": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1341": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1387": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1365": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1275": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1374": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1103": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1220": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1460": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1398": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1224": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1420": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1429": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1281": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1301": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1400": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1219": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1218": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1244": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1474": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    },
+    "1254": {
+      "adjustment": 0.0,
+      "trend": "unknown",
+      "conf_tourney": "unknown",
+      "confidence": "low",
+      "reasoning": "Low seed \u2014 recency not fetched (seeds 9+ default to 0)"
+    }
+  },
+  "metadata": {
+    "scraped_at": "2026-03-19 13:16:53",
+    "source": "covers.com",
+    "teams_in_tournament": 68
+  }
+}
