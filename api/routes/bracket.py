@@ -208,9 +208,6 @@ def first_round_matchups(
     """
     pipeline = _get_pipeline_for_gender(request, gender)
 
-    if pipeline.standard_model is None or pipeline.chaos_model is None:
-        raise HTTPException(status_code=500, detail="Models not loaded.")
-
     season_i = int(getattr(pipeline, "season", season) or season)
 
     # Cache first-round matchups so we don't recompute predictions every time

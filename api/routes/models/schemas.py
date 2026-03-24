@@ -72,6 +72,8 @@ class MatchupResponse(BaseModel):
     injury1: Optional[InjuryImpact] = None
     injury2: Optional[InjuryImpact] = None
     narrative: Optional[dict] = None
+    # True when ensemble is not loaded yet — probabilities are seed-only heuristics.
+    degraded: bool = False
 
 
 class NarrativeResponse(BaseModel):

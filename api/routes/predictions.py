@@ -8,7 +8,6 @@ import pandas as pd
 from fastapi import APIRouter, HTTPException, Request
 
 from api.routes.models.schemas import MatchupModelBreakdown, MatchupResponse, TeamStats
-from model.features.matchup_builder import create_matchup_features
 from model.features.svi import classify_svi
 
 
@@ -169,12 +168,58 @@ def get_matchup(
     if cached is not None:
         return cached
 
+    if pipeline.standard_model is None or pipeline.chaos_model is None:
+        pred = pipeline.get_matchup_prediction(int(team1_id), int(team2_id))
+        standard_prob = float(
+            max(0.025, min(0.975, float(pred["standard_prob"]) + _compute_r64_r32_bias_adjustment()))
+        )
+        chaos_prob = float(pred.get("chaos_prob", standard_prob))
+        model_breakdown = MatchupModelBreakdown(
+            decision_tree=0.0,
+            power_ratings=0.0,
+            similar_games=0.0,
+            simulation=0.0,
+            seed_difference=0.5,
+            overall=standard_prob,
+        )
+        upset_alert = bool((chaos_prob - standard_prob) > 0.08)
+        giant_killer_score = float(chaos_prob - standard_prob)
+        t1 = _team_stats_to_response(pipeline, int(team1_id), season, request)
+        t2 = _team_stats_to_response(pipeline, int(team2_id), season, request)
+
+        def _injury_payload_seed(team_id: int) -> Dict[str, Any]:
+            impacts = getattr(pipeline, "injury_impacts", {}) or {}
+            rec = impacts.get(str(int(team_id)), {}) if isinstance(impacts, dict) else {}
+            if not isinstance(rec, dict):
+                rec = {}
+            return {
+                "adjustment": float(rec.get("adjustment", 0.0) or 0.0),
+                "severity": str(rec.get("severity", "none") or "none"),
+                "key_player": rec.get("key_player_out"),
+                "reasoning": rec.get("reasoning", "") or "",
+            }
+
+        resp = MatchupResponse(
+            standard_prob=standard_prob,
+            chaos_prob=chaos_prob,
+            model_breakdown=model_breakdown,
+            team1=t1,
+            team2=t2,
+            team1_stats=t1,
+            team2_stats=t2,
+            upset_alert=upset_alert,
+            giant_killer_score=giant_killer_score,
+            injury1=_injury_payload_seed(int(team1_id)),
+            injury2=_injury_payload_seed(int(team2_id)),
+            narrative=None,
+            degraded=True,
+        )
+        cache[cache_key] = resp
+        return resp
+
     # Build features for this matchup (including ordinal features when available).
     feats = pipeline._build_matchup_row(int(team1_id), int(team2_id), int(season))
     X = pd.DataFrame([feats])
-
-    if pipeline.standard_model is None or pipeline.chaos_model is None:
-        raise HTTPException(status_code=500, detail="Models not loaded.")
 
     standard_prob_raw = float(pipeline.standard_model.predict_proba(X)[0])
     chaos_prob = float(pipeline.chaos_model.predict_proba(X)[0])
@@ -226,6 +271,7 @@ def get_matchup(
         injury1=_injury_payload(int(team1_id)),
         injury2=_injury_payload(int(team2_id)),
         narrative=None,
+        degraded=False,
     )
 
     cache[cache_key] = resp

@@ -526,10 +526,40 @@ class MarchMadnessPipeline:
 
         return standard_results, chaos_results
 
+    def _seed_only_matchup_prediction(self, team1_id: int, team2_id: int) -> Dict[str, Any]:
+        """Cheap bracket-style probability from seeds only — no ML, no build_features."""
+        from model.seed_fallback import degraded_prob_team1_wins, team_seed_num
+
+        if self.seeds_df is None:
+            raise RuntimeError("seeds_df missing; cannot compute seed-only matchup.")
+        season = int(self.season)
+        p = degraded_prob_team1_wins(int(team1_id), int(team2_id), season, self.seeds_df)
+        s1 = team_seed_num(self.seeds_df, season, int(team1_id))
+        s2 = team_seed_num(self.seeds_df, season, int(team2_id))
+        return {
+            "standard_prob": p,
+            "chaos_prob": p,
+            "giant_killer_score": 0.0,
+            "upset_alert": False,
+            "model_breakdown": {},
+            "seed_diff_hist": 0.5,
+            "team1_stats": {},
+            "team2_stats": {},
+            "svi": {
+                "team1": 0.0,
+                "team2": 0.0,
+                "category_team1": "neutral",
+                "category_team2": "neutral",
+            },
+            "seeds": {"team1": s1, "team2": s2},
+            "massey": {"team1": 0.0, "team2": 0.0},
+            "degraded": True,
+        }
+
     def get_matchup_prediction(self, team1_id: int, team2_id: int) -> Dict[str, Any]:
         """Full matchup prediction for ESPN-style UI."""
         if self.standard_model is None or self.chaos_model is None:
-            self.train()
+            return self._seed_only_matchup_prediction(team1_id, team2_id)
         if not self.team_stats:
             raise RuntimeError("Call build_features() first.")
 

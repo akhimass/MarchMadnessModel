@@ -207,6 +207,24 @@ def _teams_route_early_ok(request: Request) -> bool:
     return bool(getattr(request.app.state, "pipeline_teams_ready_m", False))
 
 
+def _degraded_model_routes_ok(request: Request) -> bool:
+    """
+    Matchup / first-round bracket / R64-R32 audit can use seed-only predictions as soon as
+    CSVs are loaded (see pipeline.get_matchup_prediction), without waiting for build_features.
+    """
+    path = request.url.path
+    g = (request.query_params.get("gender") or "M").upper().strip()
+    w_ok = bool(getattr(request.app.state, "pipeline_teams_ready_w", False))
+    m_ok = bool(getattr(request.app.state, "pipeline_teams_ready_m", False))
+    if path.startswith("/api/matchup/"):
+        return w_ok if g == "W" else m_ok
+    if path == "/api/bracket/first-round":
+        return w_ok if g == "W" else m_ok
+    if path == "/api/model/r64-r32-accuracy":
+        return m_ok
+    return False
+
+
 def _request_needs_women_pipeline(request: Request) -> bool:
     """Best-effort: query `gender=W` means we need pipeline_w (POST bodies not inspected)."""
     g = (request.query_params.get("gender") or "M").upper().strip()
@@ -218,6 +236,8 @@ async def _require_pipeline_ready(request: Request, call_next):
     path = request.url.path
     if path.startswith("/api/") and not _api_allowed_before_pipeline_ready(path):
         if _teams_route_early_ok(request):
+            pass
+        elif _degraded_model_routes_ok(request):
             pass
         elif not getattr(request.app.state, "pipeline_ready", False):
             return JSONResponse(
