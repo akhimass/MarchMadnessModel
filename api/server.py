@@ -9,7 +9,7 @@ from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from api.routes.bracket import router as bracket_router
@@ -197,7 +197,23 @@ def _mount_static() -> None:
     for dist_dir in dist_candidates:
         if dist_dir.exists():
             app.mount("/", StaticFiles(directory=str(dist_dir), html=True), name="static")
-            break
+            return
+
+    # API-only deploy (e.g. Render): no SPA bundle — avoid `{"detail":"Not Found"}` on `/` and HEAD /.
+    @app.get("/", include_in_schema=False)
+    def root_get() -> Dict[str, Any]:
+        return {
+            "service": "Akhi's March Madness API",
+            "health": "/api/health",
+            "docs": "/docs",
+            "openapi": "/openapi.json",
+            "catalog": "/api/catalog",
+            "note": "Frontend is usually on Vercel. Set VITE_API_BASE_URL to this origin (https, no trailing slash) and redeploy.",
+        }
+
+    @app.head("/", include_in_schema=False)
+    def root_head() -> Response:
+        return Response(status_code=200)
 
 
 _mount_static()
