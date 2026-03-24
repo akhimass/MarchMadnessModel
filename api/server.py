@@ -47,37 +47,62 @@ def _cors_origins() -> list[str]:
     ]
 
 
+def _bootstrap_w_pipeline(app: FastAPI, data_dir: str, use_pickles: bool) -> None:
+    """Women's pipeline after men's is live — same model objects when using saved pickles."""
+    try:
+        pipe_w = MarchMadnessPipeline(data_dir=data_dir, gender="W")
+        pipe_w.load_data()
+        pipe_w.build_features()
+        pm = getattr(app.state, "pipeline_m", None)
+        if pm is None:
+            raise RuntimeError("pipeline_m missing before W bootstrap")
+        if use_pickles:
+            pipe_w.standard_model = pm.standard_model
+            pipe_w.chaos_model = pm.chaos_model
+        else:
+            pipe_w.train()
+        app.state.pipeline_w = pipe_w
+    except Exception:
+        print("Women's pipeline bootstrap failed:\n" + traceback.format_exc())
+
+
 def _pipeline_bootstrap(app: FastAPI) -> None:
-    """Heavy sync work: load data, features, train/load models. Runs in a background thread."""
+    """Men's pipeline first (unblocks most UI), then women's in a second thread."""
     try:
         data_dir = _get_env("DATA_DIR", "./data") or "./data"
         standard_model_path = _get_env("STANDARD_MODEL_PATH", "")
         chaos_model_path = _get_env("CHAOS_MODEL_PATH", "")
-        pipe_m = MarchMadnessPipeline(data_dir=data_dir, gender="M")
-        pipe_w = MarchMadnessPipeline(data_dir=data_dir, gender="W")
+        use_pickles = bool(
+            standard_model_path
+            and chaos_model_path
+            and Path(standard_model_path).exists()
+            and Path(chaos_model_path).exists()
+        )
 
+        pipe_m = MarchMadnessPipeline(data_dir=data_dir, gender="M")
         pipe_m.load_data()
         pipe_m.build_features()
-        pipe_w.load_data()
-        pipe_w.build_features()
 
-        if standard_model_path and chaos_model_path and Path(standard_model_path).exists() and Path(chaos_model_path).exists():
+        if use_pickles:
             from model.training.standard_model import MarchMadnessEnsemble
             from model.training.chaos_model import ChaosModel
 
             pipe_m.standard_model = MarchMadnessEnsemble.load(standard_model_path)
             pipe_m.chaos_model = ChaosModel.load(chaos_model_path)
-            pipe_w.standard_model = MarchMadnessEnsemble.load(standard_model_path)
-            pipe_w.chaos_model = ChaosModel.load(chaos_model_path)
         else:
             pipe_m.train()
-            pipe_w.train()
 
         app.state.pipeline_m = pipe_m
-        app.state.pipeline_w = pipe_w
         app.state.pipeline = pipe_m
         app.state.pipeline_ready = True
         app.state.pipeline_bootstrap_error = None
+
+        threading.Thread(
+            target=_bootstrap_w_pipeline,
+            args=(app, data_dir, use_pickles),
+            name="pipeline-w-bootstrap",
+            daemon=True,
+        ).start()
     except Exception:
         app.state.pipeline_ready = False
         app.state.pipeline_bootstrap_error = traceback.format_exc()
@@ -124,6 +149,12 @@ def _api_allowed_before_pipeline_ready(path: str) -> bool:
     return False
 
 
+def _request_needs_women_pipeline(request: Request) -> bool:
+    """Best-effort: query `gender=W` means we need pipeline_w (POST bodies not inspected)."""
+    g = (request.query_params.get("gender") or "M").upper().strip()
+    return g == "W"
+
+
 @app.middleware("http")
 async def _require_pipeline_ready(request: Request, call_next):
     if request.url.path.startswith("/api/") and not _api_allowed_before_pipeline_ready(request.url.path):
@@ -131,9 +162,17 @@ async def _require_pipeline_ready(request: Request, call_next):
             return JSONResponse(
                 status_code=503,
                 content={
-                    "detail": "Model pipeline is still loading. Retry shortly.",
+                    "detail": "Men's model pipeline is still loading. Retry shortly.",
                     "path": request.url.path,
-                    "hint": "GET /api/health for status; scoreboard/results work before training finishes.",
+                    "hint": "GET /api/health for ready_m / ready_w; scoreboard works earlier.",
+                },
+            )
+        if _request_needs_women_pipeline(request) and getattr(request.app.state, "pipeline_w", None) is None:
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "detail": "Women's pipeline is still loading. Retry shortly.",
+                    "path": request.url.path,
                 },
             )
     return await call_next(request)
@@ -144,10 +183,13 @@ def health() -> Dict[str, Any]:
     pm = getattr(app.state, "pipeline_m", None)
     pw = getattr(app.state, "pipeline_w", None)
     err = getattr(app.state, "pipeline_bootstrap_error", None)
-    ready = bool(getattr(app.state, "pipeline_ready", False)) and pm is not None and pw is not None
+    ready_m = pm is not None and getattr(pm, "standard_model", None) is not None
+    ready_w = pw is not None and getattr(pw, "standard_model", None) is not None
     return {
         "status": "error" if err else "ok",
-        "ready": ready,
+        "ready": ready_m and ready_w,
+        "ready_m": ready_m,
+        "ready_w": ready_w,
         "bootstrap_error": err,
         "gender_m": getattr(pm, "gender", None),
         "gender_w": getattr(pw, "gender", None),
