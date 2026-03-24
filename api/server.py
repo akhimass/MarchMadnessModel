@@ -113,13 +113,28 @@ app.add_middleware(
 )
 
 
+def _api_allowed_before_pipeline_ready(path: str) -> bool:
+    """Routes that only use HTTP/files — not the trained MarchMadnessPipeline."""
+    if path in ("/api/health", "/api/catalog", "/api/model/performance", "/api/model/ordinal-systems"):
+        return True
+    if path.startswith("/api/scoreboard/"):
+        return True
+    if path.startswith("/api/results/"):
+        return True
+    return False
+
+
 @app.middleware("http")
 async def _require_pipeline_ready(request: Request, call_next):
-    if request.url.path.startswith("/api/") and request.url.path != "/api/health":
+    if request.url.path.startswith("/api/") and not _api_allowed_before_pipeline_ready(request.url.path):
         if not getattr(request.app.state, "pipeline_ready", False):
             return JSONResponse(
                 status_code=503,
-                content={"detail": "Model pipeline is still loading. Retry shortly.", "path": request.url.path},
+                content={
+                    "detail": "Model pipeline is still loading. Retry shortly.",
+                    "path": request.url.path,
+                    "hint": "GET /api/health for status; scoreboard/results work before training finishes.",
+                },
             )
     return await call_next(request)
 
@@ -178,6 +193,26 @@ app.include_router(model_stats_router)
 app.include_router(narrative_router)
 app.include_router(analyzer_router)
 
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+_HAS_SPA_DIST = any((_REPO_ROOT / p).exists() for p in ("march-madness-insight/dist", "web/dist"))
+
+if not _HAS_SPA_DIST:
+    # API-only deploy (Render): register / here so HEAD/GET are reliable (not nested in _mount_static).
+    @app.get("/", include_in_schema=False)
+    def root_get() -> Dict[str, Any]:
+        return {
+            "service": "Akhi's March Madness API",
+            "health": "/api/health",
+            "docs": "/docs",
+            "openapi": "/openapi.json",
+            "catalog": "/api/catalog",
+            "note": "Frontend is usually on Vercel. Set VITE_API_BASE_URL to this origin (https, no trailing slash) and redeploy.",
+        }
+
+    @app.head("/", include_in_schema=False)
+    def root_head() -> Response:
+        return Response(status_code=200)
+
 
 def _mount_static() -> None:
     # For production: serve the built React app.
@@ -197,23 +232,7 @@ def _mount_static() -> None:
     for dist_dir in dist_candidates:
         if dist_dir.exists():
             app.mount("/", StaticFiles(directory=str(dist_dir), html=True), name="static")
-            return
-
-    # API-only deploy (e.g. Render): no SPA bundle — avoid `{"detail":"Not Found"}` on `/` and HEAD /.
-    @app.get("/", include_in_schema=False)
-    def root_get() -> Dict[str, Any]:
-        return {
-            "service": "Akhi's March Madness API",
-            "health": "/api/health",
-            "docs": "/docs",
-            "openapi": "/openapi.json",
-            "catalog": "/api/catalog",
-            "note": "Frontend is usually on Vercel. Set VITE_API_BASE_URL to this origin (https, no trailing slash) and redeploy.",
-        }
-
-    @app.head("/", include_in_schema=False)
-    def root_head() -> Response:
-        return Response(status_code=200)
+            break
 
 
 _mount_static()
