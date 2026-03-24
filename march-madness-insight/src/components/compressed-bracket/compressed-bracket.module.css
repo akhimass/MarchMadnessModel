@@ -1,0 +1,460 @@
+/* ESPN-inspired responsive bracket – region-pair layout */
+
+.bracketRoot {
+  --round1-card-width: 160px;
+  --round-card-width: 150px;
+  --center-card-width: 164px;
+  --connector-width: 16px;
+  --region-row-height: 72px;
+  --shell-gap: 20px;
+  --pair-gap: 24px;
+  --s16-indent: 10px;
+  display: block;
+  width: 100%;
+}
+
+/* ── Shell: vertical stack of region-pair / center / region-pair ── */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--shell-gap);
+  width: max-content;
+  min-width: 100%;
+  margin: 0 auto;
+}
+
+/* ── Region pair: two regions side-by-side, E8 cards meet in center ── */
+
+.regionPair {
+  display: flex;
+  gap: var(--pair-gap);
+  justify-content: center;
+}
+
+/* ── Region block ── */
+
+.regionBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.regionLabel {
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6c6e6f;
+}
+
+.regionLabelLeft {
+  text-align: left;
+  padding-left: 4px;
+}
+
+.regionLabelRight {
+  text-align: right;
+  padding-right: 4px;
+}
+
+/* ── Region grid: 5 columns (R64, conn, R32+S16, conn, E8) ── */
+
+.regionGrid {
+  display: grid;
+  grid-template-rows: repeat(8, var(--region-row-height));
+  grid-template-columns:
+    var(--round1-card-width)
+    var(--connector-width)
+    var(--round-card-width)
+    var(--connector-width)
+    var(--round-card-width);
+  column-gap: 0;
+  row-gap: 0;
+  align-items: stretch;
+}
+
+/* ── Left-side cell placement ── */
+
+.r64Left {
+  grid-column: 1;
+  display: flex;
+  align-items: center;
+}
+
+.connectorL1 {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  display: flex;
+  align-items: stretch;
+}
+
+.r32S16ColLeft {
+  grid-column: 3;
+  grid-row: 1 / -1;
+}
+
+.connectorL3 {
+  grid-column: 4;
+  grid-row: 1 / -1;
+  display: flex;
+  align-items: stretch;
+}
+
+.e8Left {
+  grid-column: 5;
+  grid-row: 1 / -1;
+  display: flex;
+  align-items: center;
+}
+
+/* ── Right-side cell placement (mirrored) ── */
+
+.e8Right {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  display: flex;
+  align-items: center;
+}
+
+.connectorR3 {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  display: flex;
+  align-items: stretch;
+}
+
+.r32S16ColRight {
+  grid-column: 3;
+  grid-row: 1 / -1;
+}
+
+.connectorR1 {
+  grid-column: 4;
+  grid-row: 1 / -1;
+  display: flex;
+  align-items: stretch;
+}
+
+.r64Right {
+  grid-column: 5;
+  display: flex;
+  align-items: center;
+}
+
+/* ── Connector SVGs ── */
+
+.connectorL1 svg,
+.connectorL3 svg,
+.connectorR1 svg,
+.connectorR3 svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── R32 + S16 combined column ── */
+
+.r32S16Wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.r32S16Group {
+  flex: 1;
+  display: grid;
+  grid-template-rows: repeat(4, 1fr);
+  grid-template-columns: 1fr;
+  position: relative;
+}
+
+.r32S16Group::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 25%;
+  bottom: 25%;
+  width: 1.5px;
+  background: #c6c8cb;
+  transform: translateX(-50%);
+  z-index: 0;
+}
+
+.r32S16Card {
+  display: flex;
+  align-items: center;
+  z-index: 1;
+  position: relative;
+}
+
+.r32S16Top {
+  grid-row: 1 / 3;
+  grid-column: 1;
+}
+
+.r32S16Mid {
+  grid-row: 2 / 4;
+  grid-column: 1;
+}
+
+.r32S16Bot {
+  grid-row: 3 / 5;
+  grid-column: 1;
+}
+
+/* S16 indent — shifts Sweet 16 card inward */
+.s16IndentLeft {
+  padding-left: var(--s16-indent);
+}
+
+.s16IndentRight {
+  padding-right: var(--s16-indent);
+}
+
+/* ── Matchup cards ── */
+
+.matchupCard {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  border: 1px solid #d8dade;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #fcfcfd 100%);
+  box-shadow:
+    0 1px 2px rgba(18, 18, 19, 0.06),
+    0 2px 8px rgba(18, 18, 19, 0.08);
+}
+
+.matchupOuter {
+  min-height: 44px;
+}
+
+.matchupInner {
+  min-height: 44px;
+}
+
+.matchupCenter {
+  min-height: 44px;
+}
+
+.matchupInteractive {
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.matchupInteractive:hover {
+  border-color: #06c;
+  box-shadow:
+    0 0 0 1px rgba(0, 102, 204, 0.18),
+    0 4px 12px rgba(18, 18, 19, 0.1);
+}
+
+.matchupSelected {
+  border-color: #06c;
+  box-shadow:
+    0 0 0 2px rgba(0, 102, 204, 0.18),
+    0 4px 12px rgba(18, 18, 19, 0.08);
+}
+
+.matchupDivider {
+  height: 1px;
+  background: #eceef1;
+  margin: 0;
+}
+
+/* ── Center cluster (Final Four + Championship) ── */
+
+.centerCluster {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.centerCard {
+  width: var(--center-card-width);
+}
+
+.ffColumn,
+.champColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.ffLabel,
+.champLabel {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #121213;
+  text-align: center;
+}
+
+.ffDate {
+  font-size: 10px;
+  color: #8a8c8d;
+  text-align: center;
+}
+
+.champCard {
+  position: relative;
+}
+
+.centerMetaRow,
+.centerCardsRow {
+  display: grid;
+  grid-template-columns:
+    var(--center-card-width)
+    28px
+    var(--center-card-width)
+    28px
+    var(--center-card-width);
+  align-items: center;
+  justify-items: center;
+}
+
+.centerCardsRow {
+  min-height: 72px;
+}
+
+/* ── First Four center layout ── */
+
+.firstFourHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.firstFourCardsRow {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  min-height: 72px;
+}
+
+/* Helps scrollIntoView keep First Four clear of edges on mobile */
+.firstFourScrollTarget {
+  scroll-margin: max(12px, env(safe-area-inset-top, 0px))
+    max(12px, env(safe-area-inset-right, 0px))
+    max(12px, env(safe-area-inset-bottom, 0px))
+    max(12px, env(safe-area-inset-left, 0px));
+}
+
+@media (max-width: 1023px) {
+  .firstFourScrollTarget .firstFourCardsRow .centerCard {
+    width: min(
+      var(--center-card-width),
+      calc((100vw - 2.5rem - 36px) / 4)
+    );
+    flex-shrink: 0;
+  }
+}
+
+.centerConnector {
+  width: 100%;
+  height: 18px;
+  display: flex;
+  align-items: center;
+}
+
+.centerConnector svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Responsive breakpoints ── */
+
+@media (max-width: 1599px) {
+  .bracketRoot {
+    --round1-card-width: 136px;
+    --round-card-width: 128px;
+    --center-card-width: 136px;
+    --connector-width: 14px;
+    --region-row-height: 66px;
+    --shell-gap: 16px;
+    --pair-gap: 20px;
+    --s16-indent: 8px;
+  }
+}
+
+@media (max-width: 1279px) {
+  .bracketRoot {
+    --round1-card-width: 120px;
+    --round-card-width: 112px;
+    --center-card-width: 122px;
+    --connector-width: 12px;
+    --region-row-height: 60px;
+    --shell-gap: 14px;
+    --pair-gap: 16px;
+    --s16-indent: 6px;
+  }
+}
+
+@media (max-width: 899px) {
+  .bracketRoot {
+    --round1-card-width: 104px;
+    --round-card-width: 98px;
+    --center-card-width: 108px;
+    --connector-width: 10px;
+    --region-row-height: 54px;
+    --shell-gap: 12px;
+    --pair-gap: 12px;
+    --s16-indent: 6px;
+  }
+
+  .regionPair {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .regionLabelLeft,
+  .regionLabelRight {
+    text-align: center;
+    padding: 0;
+  }
+
+  .ffLabel,
+  .champLabel {
+    font-size: 10px;
+  }
+
+  .ffDate {
+    font-size: 9px;
+  }
+
+  .matchupOuter {
+    min-height: 42px;
+  }
+
+  .matchupInner,
+  .matchupCenter {
+    min-height: 40px;
+  }
+
+  .centerMetaRow,
+  .centerCardsRow {
+    grid-template-columns:
+      var(--center-card-width)
+      18px
+      var(--center-card-width)
+      18px
+      var(--center-card-width);
+  }
+
+  .centerConnector {
+    height: 14px;
+  }
+}

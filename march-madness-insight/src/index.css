@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ESPN TC Dark Palette */
+    --bg-base: 0 0% 4%;
+    --bg-surface: 0 0% 8%;
+    --bg-elevated: 0 0% 12%;
+    --bg-border: 0 0% 16%;
+
+    /* ESPN Brand */
+    --espn-blue: 204 63% 28%;
+    --espn-blue-light: 204 63% 39%;
+
+    /* Prediction accent */
+    --predict-blue: 212 82% 42%;
+    --predict-blue-mid: 210 72% 46%;
+
+    /* Men's / Women's */
+    --mens-red: 0 100% 40%;
+    --womens-blue: 210 72% 51%;
+
+    /* Text */
+    --text-primary: 0 0% 100%;
+    --text-secondary: 0 0% 62%;
+    --text-muted: 0 0% 38%;
+    --text-label: 0 0% 74%;
+
+    /* Semantic */
+    --win-green: 125 46% 33%;
+    --upset-red: 0 66% 47%;
+    --neutral: 0 0% 26%;
+
+    /* shadcn tokens mapped */
+    --background: var(--bg-base);
+    --foreground: var(--text-primary);
+    --card: var(--bg-surface);
+    --card-foreground: var(--text-primary);
+    --popover: var(--bg-surface);
+    --popover-foreground: var(--text-primary);
+    --primary: var(--predict-blue);
+    --primary-foreground: 0 0% 100%;
+    --secondary: var(--bg-elevated);
+    --secondary-foreground: var(--text-primary);
+    --muted: var(--bg-elevated);
+    --muted-foreground: var(--text-secondary);
+    --accent: var(--predict-blue);
+    --accent-foreground: 0 0% 100%;
+    --destructive: var(--upset-red);
+    --destructive-foreground: 0 0% 100%;
+    --border: var(--bg-border);
+    --input: var(--bg-border);
+    --ring: var(--predict-blue);
+    --radius: 0.375rem;
+
+    /* Fonts */
+    --font-display: 'Oswald', sans-serif;
+    --font-body: 'Inter', sans-serif;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    background: hsl(var(--bg-base));
+    color: hsl(var(--text-primary));
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+  }
+}
+
+/* Scrollbar hide */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Animate probability bars */
+@keyframes bar-fill {
+  from { width: 0%; }
+}
+.animate-bar {
+  animation: bar-fill 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
