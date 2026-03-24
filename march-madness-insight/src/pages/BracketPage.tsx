@@ -134,6 +134,14 @@ const BracketPage = () => {
   const { data: first, isLoading: loadingFirst } = useQuery({
     queryKey: ["first-round", gender],
     queryFn: () => fetchFirstRoundMatchupsTyped(gender),
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+    retry: (failureCount, err) => {
+      const s = String((err as Error)?.message ?? "");
+      if (/\b(503|502|504)\b/.test(s)) return failureCount < 10;
+      return failureCount < 3;
+    },
+    retryDelay: (attempt) => Math.min(1500 * 2 ** attempt, 30_000),
   });
 
   const { data: womenFieldRows = [] } = useQuery({
@@ -188,6 +196,15 @@ const BracketPage = () => {
     queries: POST_STAGES.map((stage) => ({
       queryKey: ["round-matchups", stage, gender, effectivePicks],
       queryFn: () => fetchRoundMatchups(stage, gender, effectivePicks, 2026),
+      enabled: Object.keys(effectivePicks).length > 0,
+      staleTime: 2 * 60_000,
+      refetchOnWindowFocus: false,
+      retry: (failureCount: number, err: Error) => {
+        const s = String(err?.message ?? "");
+        if (/\b(503|502|504)\b/.test(s)) return failureCount < 10;
+        return failureCount < 3;
+      },
+      retryDelay: (attempt: number) => Math.min(1500 * 2 ** attempt, 30_000),
     })),
   });
 
@@ -223,6 +240,39 @@ const BracketPage = () => {
     }
     prevPickCount.current = pickCount;
   }, [pickCount, readOnlySnapshot]);
+
+  // Auto-fill picks from completed tournament results so R32+ tabs unlock automatically.
+  // Uses setPicks (not setPick) to avoid cascading downstream-pick deletion.
+  useEffect(() => {
+    if (gender !== "M") return; // Women's bracket doesn't use Kaggle IDs
+    if (Object.keys(winnerByPair).length === 0) return;
+
+    // Collect all matchup slots we know about so far (R1 always available;
+    // R2/R3/R4 become available as prior-round picks cascade in).
+    const allMatchups = [...r1Flat, ...r2, ...r3, ...r4];
+    const resultPicks: Record<string, number> = {};
+
+    for (const m of allMatchups) {
+      if (!m.slot || !m.team1?.teamId || !m.team2?.teamId) continue;
+      const a = Number(m.team1.teamId);
+      const b = Number(m.team2.teamId);
+      if (!a || !b) continue;
+      const lo = Math.min(a, b);
+      const hi = Math.max(a, b);
+      const winner = winnerByPair[`${lo}-${hi}`];
+      if (winner != null) {
+        resultPicks[String(m.slot)] = winner;
+      }
+    }
+
+    if (Object.keys(resultPicks).length === 0) return;
+
+    setPicks((prev) => {
+      const changed = Object.entries(resultPicks).some(([k, v]) => prev[k] !== v);
+      if (!changed) return prev;
+      return { ...prev, ...resultPicks };
+    });
+  }, [gender, winnerByPair, r1Flat, r2, r3, r4, setPicks]);
 
   const setGender = (g: "M" | "W") => {
     const next = new URLSearchParams(searchParams);

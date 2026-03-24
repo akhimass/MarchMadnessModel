@@ -72,8 +72,10 @@ const AnalyzerPage = () => {
   const liveResults = useMemo(() => {
     if (!completedGames || !predictionsMap.size) return [];
     return completedGames.slice(0, 20).map(game => {
-      const awayK = espnToKaggle(game.away.espnId, 'M');
-      const homeK = espnToKaggle(game.home.espnId, 'M');
+      // Prefer kaggleId from the game object (populated by backend for all teams);
+      // fall back to the static 25-team espnToKaggle map as a safety net.
+      const awayK = game.away.kaggleId ?? espnToKaggle(game.away.espnId, 'M');
+      const homeK = game.home.kaggleId ?? espnToKaggle(game.home.espnId, 'M');
       if (!awayK || !homeK) return null;
       const key = `2026_${Math.min(awayK, homeK)}_${Math.max(awayK, homeK)}`;
       const pred = predictionsMap.get(key);

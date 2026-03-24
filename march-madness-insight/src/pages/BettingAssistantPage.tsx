@@ -25,7 +25,15 @@ import { bettingTeamLabel } from "@/lib/bettingDisplay";
 import type { BetSlipItem, KellyStrategy } from "@/types/betting";
 import type { NarrativeApiResponse } from "@/lib/api";
 import { useTournamentResults } from "@/hooks/useTournamentResults";
+import { teamsById } from "@/data/teams2026";
 import { toast } from "sonner";
+
+function team2026RowFromStaticId(teamId: number | null | undefined): Team2026Row | null {
+  if (teamId == null || teamId <= 0) return null;
+  const t = teamsById.get(teamId);
+  if (!t) return null;
+  return { teamId: t.id, teamName: t.name, seed: t.seed, region: t.region, gender: "M" };
+}
 
 import { Button } from "@ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@ui/alert";
@@ -132,27 +140,25 @@ const BettingAssistantPage = () => {
   const board = useQuery({
     queryKey: ["betting-board", teams, mergedOddsGames],
     queryFn: async () => {
-      const out: Array<{
-        game: OddsGame;
-        home: Team2026Row;
-        away: Team2026Row;
-        homeProb: number | null;
-        awayProb: number | null;
-      }> = [];
       const list = mergedOddsGames;
+      const candidates: Array<{ game: OddsGame; home: Team2026Row; away: Team2026Row }> = [];
       for (const game of list) {
         const res = resolveGameTeams(game, teams);
         if (!res) continue;
-        const lo = Math.min(res.home.teamId, res.away.teamId);
-        const hi = Math.max(res.home.teamId, res.away.teamId);
-        const p = await fetchMatchupStandardProb(lo, hi, "M");
-        const homeIsLo = res.home.teamId === lo;
-        const homeProb = p == null ? null : homeIsLo ? p : 1 - p;
-        const awayProb = p == null ? null : homeIsLo ? 1 - p : p;
-        out.push({ game, home: res.home, away: res.away, homeProb, awayProb });
-        if (out.length >= 24) break;
+        candidates.push({ game, home: res.home, away: res.away });
+        if (candidates.length >= 24) break;
       }
-      return out;
+      return Promise.all(
+        candidates.map(async ({ game, home, away }) => {
+          const lo = Math.min(home.teamId, away.teamId);
+          const hi = Math.max(home.teamId, away.teamId);
+          const p = await fetchMatchupStandardProb(lo, hi, "M");
+          const homeIsLo = home.teamId === lo;
+          const homeProb = p == null ? null : homeIsLo ? p : 1 - p;
+          const awayProb = p == null ? null : homeIsLo ? 1 - p : p;
+          return { game, home, away, homeProb, awayProb };
+        }),
+      );
     },
     enabled: oddsMeta !== undefined,
   });
@@ -163,13 +169,15 @@ const BettingAssistantPage = () => {
   );
   const completedRoundsBoardQ = useQuery({
     queryKey: ["completed-round-board", completedQ.data, teams, selectedRound],
-    enabled: Boolean((selectedRound === "R64" || selectedRound === "R32") && completedQ.data?.length && teams.length),
+    enabled: Boolean((selectedRound === "R64" || selectedRound === "R32") && completedQ.data?.length),
     queryFn: async (): Promise<CompletedBoardRow[]> => {
       const list = (completedQ.data ?? []).filter((g) => g.round === selectedRound && g.homeKaggleId && g.awayKaggleId);
       const rows = await Promise.all(
         list.map(async (g) => {
-          const home = teams.find((t) => t.teamId === g.homeKaggleId);
-          const away = teams.find((t) => t.teamId === g.awayKaggleId);
+          const home =
+            teams.find((t) => t.teamId === g.homeKaggleId) ?? team2026RowFromStaticId(g.homeKaggleId);
+          const away =
+            teams.find((t) => t.teamId === g.awayKaggleId) ?? team2026RowFromStaticId(g.awayKaggleId);
           if (!home || !away) return null;
           const lo = Math.min(home.teamId, away.teamId);
           const hi = Math.max(home.teamId, away.teamId);

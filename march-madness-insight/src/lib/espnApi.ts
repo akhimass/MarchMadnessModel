@@ -352,8 +352,10 @@ export function computeBrierScore(
 
   for (const game of completedGames) {
     if (!game.completed) continue;
-    const awayKaggle = espnToKaggle(game.away.espnId, game.gender);
-    const homeKaggle = espnToKaggle(game.home.espnId, game.gender);
+    // Prefer kaggleId from game object (set by backend for all teams);
+    // fall back to the static espnToKaggle map as a safety net.
+    const awayKaggle = game.away.kaggleId ?? espnToKaggle(game.away.espnId, game.gender);
+    const homeKaggle = game.home.kaggleId ?? espnToKaggle(game.home.espnId, game.gender);
     if (!awayKaggle || !homeKaggle) continue;
 
     const key1 = `2026_${Math.min(awayKaggle, homeKaggle)}_${Math.max(awayKaggle, homeKaggle)}`;

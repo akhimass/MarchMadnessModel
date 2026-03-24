@@ -10,7 +10,8 @@ services:
     name: march-madness-api
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn api.server:app --host 0.0.0.0 --port $PORT --workers 2
+    # Single worker: app.state holds one pipeline; multiple workers each cold-load the model (2× boot cost).
+    startCommand: uvicorn api.server:app --host 0.0.0.0 --port $PORT --workers 1
     # Render pings this path to keep the service warm and detect readiness faster
     healthCheckPath: /api/health
     envVars:

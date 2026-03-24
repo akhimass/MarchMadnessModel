@@ -7,6 +7,7 @@ import { RegionFilterTabs } from "@/components/bracket/RegionFilterTabs";
 import { MatchupPicker } from "@/components/predictor/MatchupPicker";
 import { PredictionGauge } from "@/components/predictor/PredictionGauge";
 import { ModelBreakdownTable } from "@/components/predictor/ModelBreakdownTable";
+import { SystemOrdinalRankings } from "@/components/predictor/SystemOrdinalRankings";
 import { TeamStatHighlights } from "@/components/predictor/TeamStatHighlights";
 import { InjuryBanner } from "@/components/predictor/InjuryBanner";
 import { UpsetAlert } from "@/components/predictor/UpsetAlert";
@@ -244,7 +245,7 @@ const PredictorPage = () => {
     );
   }
 
-  const { team1, team2, standardProb, modelBreakdown, upsetAlert, giantKillerScore, injuryImpact } = matchup;
+  const { team1, team2, standardProb, modelBreakdown, upsetAlert, giantKillerScore, injuryImpact, ordinalRanks } = matchup;
 
   const totalPicks = Object.keys(picksForGender ?? {}).length;
   const picksRemaining = 63 - totalPicks;
@@ -452,6 +453,12 @@ const PredictorPage = () => {
                 />
               </CardContent>
             </Card>
+
+            <SystemOrdinalRankings
+              team1Abbrev={team1.abbreviation}
+              team2Abbrev={team2.abbreviation}
+              ordinalRanks={ordinalRanks}
+            />
           </section>
 
           <aside className="lg:col-span-1">

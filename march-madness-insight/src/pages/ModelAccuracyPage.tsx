@@ -14,6 +14,7 @@ import {
 } from "recharts";
 
 import { InnerPageShell } from "@/components/layout/InnerPageShell";
+import { RatingSystemsTab } from "@/components/model/RatingSystemsTab";
 import {
   fetchModelPerformance,
   fetchOrdinalSystems,
@@ -322,7 +323,7 @@ const ModelAccuracyPage = () => {
   return (
     <InnerPageShell
       contextLabel="MODEL ANALYZER"
-      contextDescription="Accuracy · game log · model details"
+      contextDescription="Accuracy · game log · model details · rating systems"
       crumbs={[{ label: "Model Analyzer" }]}
     >
       <main className="mx-auto max-w-6xl space-y-6 px-4 py-8">
@@ -354,15 +355,18 @@ const ModelAccuracyPage = () => {
         </div>
 
         <Tabs defaultValue="overview">
-          <TabsList>
+          <TabsList className="flex flex-wrap gap-1">
             <TabsTrigger value="overview" className="font-display text-xs uppercase">
               Overview
             </TabsTrigger>
-            <TabsTrigger value="analysis" className="font-display text-xs uppercase">
-              Analysis
-            </TabsTrigger>
             <TabsTrigger value="game-log" className="font-display text-xs uppercase">
               Game log
+            </TabsTrigger>
+            <TabsTrigger value="analysis" className="font-display text-xs uppercase">
+              Model details
+            </TabsTrigger>
+            <TabsTrigger value="rating-systems" className="font-display text-xs uppercase">
+              Rating systems
             </TabsTrigger>
             <TabsTrigger value="results" className="font-display text-xs uppercase">
               Tournament results
@@ -517,6 +521,10 @@ const ModelAccuracyPage = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="rating-systems" className="mt-6 space-y-6">
+            <RatingSystemsTab />
           </TabsContent>
 
           <TabsContent value="analysis" className="mt-6 space-y-6">

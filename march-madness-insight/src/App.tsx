@@ -1,7 +1,9 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import { AppLayout } from "@/components/layout/AppLayout";
+import { prefetchDeploymentData } from "@/lib/apiWarmup";
 import LandingPage from "./pages/LandingPage";
 import BracketPage from "./pages/BracketPage";
 import LiveBracketPage from "./pages/LiveBracketPage";
@@ -17,14 +19,28 @@ import { Toaster } from "sonner";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
       refetchOnWindowFocus: false,
+      retry: (failureCount, err) => {
+        const s = String((err as Error)?.message ?? "");
+        if (/\b(503|502|504)\b/.test(s)) return failureCount < 12;
+        return failureCount < 2;
+      },
+      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 20_000),
     },
   },
 });
 
+function DeploymentWarmup() {
+  const qc = useQueryClient();
+  useEffect(() => {
+    prefetchDeploymentData(qc);
+  }, [qc]);
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <DeploymentWarmup />
     <BrowserRouter>
       <Toaster richColors position="top-right" />
       <Routes>

@@ -526,6 +526,26 @@ class MarchMadnessPipeline:
 
         return standard_results, chaos_results
 
+    def get_ordinal_rank(self, team_id: int, system: str) -> Optional[int]:
+        """
+        National rank (1 = best) for one team in a Massey ordinal system column, pre-tournament snapshot.
+        """
+        of = getattr(self, "ordinal_features", None)
+        if of is None:
+            return None
+        wide = getattr(of, "_wide", None)
+        if wide is None or not isinstance(wide, pd.DataFrame):
+            return None
+        if system not in wide.columns:
+            return None
+        row = wide[(wide["Season"] == int(self.season)) & (wide["TeamID"] == int(team_id))]
+        if row.empty:
+            return None
+        val = row.iloc[0][system]
+        if pd.isna(val):
+            return None
+        return int(round(float(val)))
+
     def _seed_only_matchup_prediction(self, team1_id: int, team2_id: int) -> Dict[str, Any]:
         """Cheap bracket-style probability from seeds only — no ML, no build_features."""
         from model.seed_fallback import degraded_prob_team1_wins, team_seed_num

@@ -60,6 +60,8 @@ export interface MatchupPrediction {
   team2Narrative: string;
   injuryImpact?: InjuryImpact;
   recencyUpdate?: RecencyUpdate;
+  /** Massey ordinal national ranks from `/api/matchup` when MMasseyOrdinals data is loaded. */
+  ordinalRanks?: Record<string, { team1: number; team2: number }>;
 }
 
 export interface BracketMatchup {

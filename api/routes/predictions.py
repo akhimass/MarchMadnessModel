@@ -142,6 +142,21 @@ def _compute_r64_r32_bias_adjustment() -> float:
     return max(-0.03, min(0.03, avg))
 
 
+_ORDINAL_SYSTEM_KEYS = ["POM", "SAG", "NET", "BPI", "MAS", "COL", "WOL", "RPI", "AP", "USA", "WAB"]
+
+
+def _ordinal_ranks_for_matchup(pipeline: Any, team1_id: int, team2_id: int) -> Optional[Dict[str, Dict[str, int]]]:
+    if not hasattr(pipeline, "get_ordinal_rank"):
+        return None
+    out: Dict[str, Dict[str, int]] = {}
+    for sys in _ORDINAL_SYSTEM_KEYS:
+        r1 = pipeline.get_ordinal_rank(int(team1_id), sys)
+        r2 = pipeline.get_ordinal_rank(int(team2_id), sys)
+        if r1 is not None and r2 is not None:
+            out[sys] = {"team1": r1, "team2": r2}
+    return out if out else None
+
+
 @router.get("/matchup/{team1_id}/{team2_id}")
 def get_matchup(
     team1_id: int,
@@ -213,6 +228,7 @@ def get_matchup(
             injury2=_injury_payload_seed(int(team2_id)),
             narrative=None,
             degraded=True,
+            ordinal_ranks=_ordinal_ranks_for_matchup(pipeline, team1_id, team2_id),
         )
         cache[cache_key] = resp
         return resp
@@ -272,6 +288,7 @@ def get_matchup(
         injury2=_injury_payload(int(team2_id)),
         narrative=None,
         degraded=False,
+        ordinal_ranks=_ordinal_ranks_for_matchup(pipeline, team1_id, team2_id),
     )
 
     cache[cache_key] = resp

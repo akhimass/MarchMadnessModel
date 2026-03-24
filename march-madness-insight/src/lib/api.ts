@@ -375,6 +375,7 @@ export const fetchMatchup = async (matchupId: string): Promise<MatchupPrediction
       team2: uiTeam2,
       standardProb: Number(matchupJson?.standard_prob ?? override?.standardProb ?? 0),
       chaosProb: Number(matchupJson?.chaos_prob ?? override?.chaosProb ?? 0),
+      ordinalRanks: matchupJson?.ordinal_ranks as MatchupPrediction["ordinalRanks"] | undefined,
       modelBreakdown: {
         decision_tree: Number(mb?.decision_tree ?? 0),
         power_ratings: Number(mb?.power_ratings ?? 0),

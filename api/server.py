@@ -220,6 +220,8 @@ def _degraded_model_routes_ok(request: Request) -> bool:
         return w_ok if g == "W" else m_ok
     if path == "/api/bracket/first-round":
         return w_ok if g == "W" else m_ok
+    if path == "/api/bracket/round-matchups":
+        return w_ok if g == "W" else m_ok
     if path == "/api/model/r64-r32-accuracy":
         return m_ok
     return False

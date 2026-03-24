@@ -74,6 +74,8 @@ class MatchupResponse(BaseModel):
     narrative: Optional[dict] = None
     # True when ensemble is not loaded yet — probabilities are seed-only heuristics.
     degraded: bool = False
+    # Massey ordinal national ranks per system code → { team1, team2 } (lower rank = better team).
+    ordinal_ranks: Optional[Dict[str, Dict[str, int]]] = None
 
 
 class NarrativeResponse(BaseModel):

@@ -15,6 +15,12 @@ export function useBracketMatchupsForPicks(picks: Record<string, number>, gender
     queryFn: () => fetchFirstRoundMatchupsTyped(gender),
     staleTime: 5 * 60_000,   // First-round matchups are static — cache for 5 min
     refetchOnWindowFocus: false,
+    retry: (failureCount, err) => {
+      const s = String((err as Error)?.message ?? "");
+      if (/\b(503|502|504)\b/.test(s)) return failureCount < 10;
+      return failureCount < 3;
+    },
+    retryDelay: (attempt) => Math.min(1500 * 2 ** attempt, 30_000),
   });
 
   const postQueries = useQueries({
@@ -24,6 +30,12 @@ export function useBracketMatchupsForPicks(picks: Record<string, number>, gender
       enabled: Object.keys(picks).length > 0,
       staleTime: 2 * 60_000,
       refetchOnWindowFocus: false,
+      retry: (failureCount: number, err: Error) => {
+        const s = String(err?.message ?? "");
+        if (/\b(503|502|504)\b/.test(s)) return failureCount < 10;
+        return failureCount < 3;
+      },
+      retryDelay: (attempt: number) => Math.min(1500 * 2 ** attempt, 30_000),
     })),
   });
 
