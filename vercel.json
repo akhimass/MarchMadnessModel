@@ -1,6 +1,0 @@
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "npm install --prefix march-madness-insight",
-  "buildCommand": "npm run build --prefix march-madness-insight",
-  "outputDirectory": "march-madness-insight/dist"
-}
