@@ -164,7 +164,10 @@ const BettingAssistantPage = () => {
   });
 
   const filteredBoard = useMemo(
-    () => (board.data ?? []).filter((r) => inferNcaaRoundFromCommence(r.game.commence_time) === selectedRound),
+    () =>
+      (board.data ?? []).filter(
+        (r) => inferNcaaRoundFromCommence(r.game.commence_time, r.game.roundLabel) === selectedRound,
+      ),
     [board.data, selectedRound],
   );
   const completedRoundsBoardQ = useQuery({
@@ -408,7 +411,7 @@ const BettingAssistantPage = () => {
           edge,
           ev,
           game,
-          round: inferNcaaRoundFromCommence(game.commence_time),
+          round: inferNcaaRoundFromCommence(game.commence_time, game.roundLabel),
         });
       }
       if (aOdds != null) {
@@ -430,7 +433,7 @@ const BettingAssistantPage = () => {
           edge,
           ev,
           game,
-          round: inferNcaaRoundFromCommence(game.commence_time),
+          round: inferNcaaRoundFromCommence(game.commence_time, game.roundLabel),
         });
       }
     }
@@ -478,7 +481,7 @@ const BettingAssistantPage = () => {
         ev,
         stakeBand,
         game: row.game,
-        round: inferNcaaRoundFromCommence(row.game.commence_time),
+        round: inferNcaaRoundFromCommence(row.game.commence_time, row.game.roundLabel),
       };
       setSlip((s) => [...s.filter((x) => x.id !== item.id), item]);
       const buttonKey = `${row.game.id}-${side}`;
@@ -528,7 +531,7 @@ const BettingAssistantPage = () => {
         adjustedProb: prob,
         stakeBand,
         game: row.game,
-        round: inferNcaaRoundFromCommence(row.game.commence_time),
+        round: inferNcaaRoundFromCommence(row.game.commence_time, row.game.roundLabel),
       });
     }
     setSlip(items);
@@ -795,6 +798,7 @@ const BettingAssistantPage = () => {
           </Button>
           <BetSlip
             items={slip}
+            bankroll={bankroll}
             narratives={narratives}
             analysisError={analysisError}
             onStakeChange={updateStake}

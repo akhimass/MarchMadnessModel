@@ -160,7 +160,18 @@ export function buildBettingOddsGameList(apiGames: OddsGame[]): OddsGame[] {
     const k = pairKeyForOddsGame(g);
     if (s16Keys.has(k) && !apiByS16Key.has(k)) apiByS16Key.set(k, g);
   }
-  return canonical.map((m) => apiByS16Key.get(pairKeyForOddsGame(m)) ?? m);
+  return canonical.map((m) => {
+    const api = apiByS16Key.get(pairKeyForOddsGame(m));
+    if (!api) return m;
+    // Keep books/prices from API but preserve canonical tip-off times. Odds API `commence_time`
+    // often lands on adjacent UTC/ET dates vs our NCAA round buckets, which made every game
+    // infer as "R64" and empty the Sweet 16 tab.
+    return {
+      ...api,
+      commence_time: m.commence_time,
+      roundLabel: m.roundLabel ?? api.roundLabel,
+    };
+  });
 }
 
 function tokenSet(s: string): Set<string> {
@@ -301,7 +312,14 @@ export function kellyBetWithModifier(
   return Math.round(bankroll * kelly * modifier * 100) / 100;
 }
 
-export function inferNcaaRoundFromCommence(commenceIso: string): string {
+export function inferNcaaRoundFromCommence(commenceIso: string, roundLabel?: string | null): string {
+  const rl = String(roundLabel ?? "").toLowerCase();
+  if (rl.includes("sweet")) return "S16";
+  if (rl.includes("elite")) return "E8";
+  if (rl.includes("final four") || rl === "final four") return "F4";
+  if (rl.includes("championship") || rl.includes("national championship")) return "CHAMP";
+  if (rl.includes("first four")) return "FF";
+
   const d = parseEspnDateToYyyymmdd(commenceIso);
   if (!d) return "R64";
   if (TOURNAMENT_DATES.firstFour.includes(d)) return "FF";

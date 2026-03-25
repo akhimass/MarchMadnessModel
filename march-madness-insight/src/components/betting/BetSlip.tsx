@@ -8,8 +8,22 @@ function formatAmericanOdds(odds: number): string {
   return `${rounded > 0 ? "+" : ""}${rounded.toFixed(1)}`;
 }
 
+function stakeSizeLabel(
+  band: BetSlipItem["stakeBand"],
+  stake: number,
+  bankroll?: number,
+): string {
+  const pct = bankroll && bankroll > 0 ? (stake / bankroll) * 100 : null;
+  const pctBit = pct != null ? `${pct.toFixed(1)}% of bankroll` : "bankroll % n/a";
+  // Band is position-sizing only (not upset or model risk): ≥6% = large, 3–6% = medium, <3% = small.
+  const bandWord =
+    band === "high" ? "Large stake" : band === "medium" ? "Medium stake" : band === "low" ? "Small stake" : "Stake size n/a";
+  return `${bandWord} · ${pctBit}`;
+}
+
 export function BetSlip({
   items,
+  bankroll,
   onRemove,
   onStakeChange,
   onAnalyze,
@@ -18,6 +32,8 @@ export function BetSlip({
   analysisError,
 }: {
   items: BetSlipItem[];
+  /** Used to show "% of bankroll" next to stake-size bands (bands are sizing, not model risk). */
+  bankroll?: number;
   onRemove: (id: string) => void;
   onStakeChange: (id: string, stake: number) => void;
   onAnalyze: () => void;
@@ -56,7 +72,8 @@ export function BetSlip({
                     />
                     <span className="text-xs text-emerald-400">EV ${it.ev.toFixed(2)}</span>
                     <span
-                      className={`text-[10px] uppercase ${
+                      title="How big this bet is vs your bankroll (not model upset risk). ≥6% = large, 3–6% = medium, under 3% = small."
+                      className={`max-w-[140px] text-[10px] leading-tight ${
                         it.stakeBand === "high"
                           ? "text-amber-400"
                           : it.stakeBand === "medium"
@@ -64,7 +81,7 @@ export function BetSlip({
                             : "text-muted-foreground"
                       }`}
                     >
-                      {it.stakeBand ? `${it.stakeBand} risk` : "risk n/a"}
+                      {it.stakeBand ? stakeSizeLabel(it.stakeBand, it.stake, bankroll) : "Stake size n/a"}
                     </span>
                     <Button variant="ghost" size="sm" type="button" className="h-7 px-2 text-xs" onClick={() => onRemove(it.id)}>
                       ✕
