@@ -80,15 +80,15 @@ function resolveGameTeams(
 const BettingAssistantPage = () => {
   // Strategy knobs:
   // - Default: bet the model-favorite side.
-  // - If model-favorite is in the 50–60% range: bet whichever side has higher edge/value.
   // - Use 60/40 blend for value, but cap effective model confidence to 70/30.
   // - 60/40 blend: ourProb = 0.6 * modelProb + 0.4 * marketImpliedProb.
   const MIN_MODEL_FAV_PROB = 0.3;
   const MAX_MODEL_FAV_PROB = 0.7;
-  const MODERATE_FAV_MIN = 0.5;
-  const MODERATE_FAV_MAX = 0.6;
   const MODEL_WEIGHT = 0.6;
   const MARKET_WEIGHT = 0.4;
+  // Only consider taking the (possibly) underdog when the model gives it
+  // enough win probability and it beats the market implied probability.
+  const MIN_MODEL_PROB_TO_PLAY = 0.4;
 
   const ROUNDS = [
     { key: "R64", label: "Round of 64", status: "completed" as const },
@@ -427,7 +427,6 @@ const BettingAssistantPage = () => {
 
       const modelFavSide = homeProb >= awayProb ? ("home" as const) : ("away" as const);
       const modelFavProb = modelFavSide === "home" ? homeProb : awayProb;
-      const modelFavInModerateRange = modelFavProb >= MODERATE_FAV_MIN && modelFavProb <= MODERATE_FAV_MAX;
 
       const homeAmerican = getConsensusOdds(game, game.home_team, "h2h");
       const awayAmerican = getConsensusOdds(game, game.away_team, "h2h");
@@ -443,7 +442,18 @@ const BettingAssistantPage = () => {
 
       const edgeHome = cappedHome - impliedHome;
       const edgeAway = cappedAway - impliedAway;
-      const chosenSide = modelFavInModerateRange ? (edgeHome >= edgeAway ? ("home" as const) : ("away" as const)) : modelFavSide;
+
+      const valueGapHome = homeProb - impliedHome;
+      const valueGapAway = awayProb - impliedAway;
+      const qualifiesHome = homeProb >= MIN_MODEL_PROB_TO_PLAY && valueGapHome > 0;
+      const qualifiesAway = awayProb >= MIN_MODEL_PROB_TO_PLAY && valueGapAway > 0;
+
+      let chosenSide: "home" | "away" = modelFavSide;
+      if (qualifiesHome || qualifiesAway) {
+        if (qualifiesHome && qualifiesAway) chosenSide = valueGapHome >= valueGapAway ? "home" : "away";
+        else chosenSide = qualifiesHome ? "home" : "away";
+      }
+
       const chosenEdge = chosenSide === "home" ? edgeHome : edgeAway;
       if (chosenEdge <= 0) continue;
 
@@ -479,7 +489,7 @@ const BettingAssistantPage = () => {
       });
     }
     return items;
-  }, [strategyPortfolioRows, MODERATE_FAV_MIN, MODERATE_FAV_MAX, MIN_MODEL_FAV_PROB, MAX_MODEL_FAV_PROB, MODEL_WEIGHT, MARKET_WEIGHT]);
+  }, [strategyPortfolioRows, MIN_MODEL_FAV_PROB, MAX_MODEL_FAV_PROB, MIN_MODEL_PROB_TO_PLAY, MODEL_WEIGHT, MARKET_WEIGHT]);
 
   const filteredValuePicks = useMemo(
     () => valuePicks.filter((p) => (p.round ?? "R64") === selectedRound),
@@ -499,7 +509,6 @@ const BettingAssistantPage = () => {
 
       const modelFavSide = baseHomeProb >= baseAwayProb ? "home" : "away";
       const modelFavProb = modelFavSide === "home" ? baseHomeProb : baseAwayProb;
-      const modelFavInModerateRange = modelFavProb >= MODERATE_FAV_MIN && modelFavProb <= MODERATE_FAV_MAX;
 
       const homeAmerican = getConsensusOdds(row.game, row.game.home_team, "h2h");
       const awayAmerican = getConsensusOdds(row.game, row.game.away_team, "h2h");
@@ -516,8 +525,18 @@ const BettingAssistantPage = () => {
       const edgeHome = cappedHome - impliedHome;
       const edgeAway = cappedAway - impliedAway;
 
-      const chosenSide: "home" | "away" = modelFavInModerateRange ? (edgeHome >= edgeAway ? "home" : "away") : modelFavSide;
-      if (side !== chosenSide) return; // strategy: bet higher value in moderate range, otherwise model favorite
+      const valueGapHome = baseHomeProb - impliedHome;
+      const valueGapAway = baseAwayProb - impliedAway;
+      const qualifiesHome = baseHomeProb >= MIN_MODEL_PROB_TO_PLAY && valueGapHome > 0;
+      const qualifiesAway = baseAwayProb >= MIN_MODEL_PROB_TO_PLAY && valueGapAway > 0;
+
+      let chosenSide: "home" | "away" = modelFavSide;
+      if (qualifiesHome || qualifiesAway) {
+        if (qualifiesHome && qualifiesAway) chosenSide = valueGapHome >= valueGapAway ? "home" : "away";
+        else chosenSide = qualifiesHome ? "home" : "away";
+      }
+
+      if (side !== chosenSide) return; // only allow adding the higher-value side
 
       const american = chosenSide === "home" ? homeAmerican : awayAmerican;
       const implied = chosenSide === "home" ? impliedHome : impliedAway;
@@ -559,7 +578,7 @@ const BettingAssistantPage = () => {
       toast.success(`Added ${item.teamName} ML to bet slip · $${Math.round(stake)} suggested`);
       slipRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     },
-    [bankroll, MIN_MODEL_FAV_PROB, MAX_MODEL_FAV_PROB, MODERATE_FAV_MIN, MODERATE_FAV_MAX, MODEL_WEIGHT, MARKET_WEIGHT, strategySuggestedByGameId, strategyPortfolioRows],
+    [bankroll, MIN_MODEL_FAV_PROB, MAX_MODEL_FAV_PROB, MIN_MODEL_PROB_TO_PLAY, MODEL_WEIGHT, MARKET_WEIGHT, strategySuggestedByGameId, strategyPortfolioRows],
   );
 
   const buildAiSlip = useCallback(() => {

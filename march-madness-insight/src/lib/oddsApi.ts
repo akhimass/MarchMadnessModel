@@ -231,15 +231,20 @@ export function fullBankrollSuggestedByGameId(
   bankroll: number,
 ): Map<string, { home: number; away: number }> {
   // Strategy:
-  // - Bet on the model-favorite side only.
+  // - Always bet the model-favorite side.
   // - Blend model probability with market implied probability (60/40) to maximize value.
   // - Cap effective model confidence to 70/30 so extreme favorites don't dominate sizing.
+  // - If confidence is outside 60–70%, still bet the winner but with smaller sizing.
   const MIN_MODEL_FAV_PROB = 0.3;
   const MAX_MODEL_FAV_PROB = 0.7;
   const MODEL_WEIGHT = 0.6;
   const MARKET_WEIGHT = 0.4;
-  const MODERATE_FAV_MIN = 0.5;
-  const MODERATE_FAV_MAX = 0.6;
+  // Only consider taking the (possibly) underdog when the model gives it
+  // enough win probability and it beats the market implied probability.
+  const MIN_MODEL_PROB_TO_PLAY = 0.4;
+  const CONF_BAND_MIN = 0.6;
+  const CONF_BAND_MAX = 0.7;
+  const OUTSIDE_CONF_MULT = 0.25;
 
   const empty = new Map<string, { home: number; away: number }>();
   if (bankroll <= 0 || !rows.length) {
@@ -257,7 +262,7 @@ export function fullBankrollSuggestedByGameId(
       const ap = row.awayProb ?? 0.5;
       const modelFavSide = hp >= ap ? ("home" as const) : ("away" as const);
       const modelFavProb = modelFavSide === "home" ? hp : ap;
-      const modelFavInModerateRange = modelFavProb >= MODERATE_FAV_MIN && modelFavProb <= MODERATE_FAV_MAX;
+      const modelFavInBand = modelFavProb >= CONF_BAND_MIN && modelFavProb <= CONF_BAND_MAX;
 
       const impliedHomeProb = americanToImpliedProb(homeOdds);
       const impliedAwayProb = americanToImpliedProb(awayOdds);
@@ -271,18 +276,24 @@ export function fullBankrollSuggestedByGameId(
       const edgeHome = cappedHome - impliedHomeProb;
       const edgeAway = cappedAway - impliedAwayProb;
 
-      // If we're in the near coinflip band (50-60% model favorite),
-      // bet the side with higher edge/value (not necessarily the model favorite).
-      // Otherwise, default to model-favorite side.
-      let chosenSide: "home" | "away";
-      if (modelFavInModerateRange) {
-        chosenSide = edgeHome >= edgeAway ? "home" : "away";
-      } else {
-        chosenSide = modelFavSide;
+      const valueGapHome = hp - impliedHomeProb;
+      const valueGapAway = ap - impliedAwayProb;
+      const qualifiesHome = hp >= MIN_MODEL_PROB_TO_PLAY && valueGapHome > 0;
+      const qualifiesAway = ap >= MIN_MODEL_PROB_TO_PLAY && valueGapAway > 0;
+
+      // Prefer the side that has the better value profile (model prob beats implied),
+      // but fall back to model favorite if neither side qualifies.
+      let chosenSide: "home" | "away" = modelFavSide;
+      if (qualifiesHome || qualifiesAway) {
+        if (qualifiesHome && qualifiesAway) chosenSide = valueGapHome >= valueGapAway ? "home" : "away";
+        else chosenSide = qualifiesHome ? "home" : "away";
       }
 
+      const chosenModelProb = chosenSide === "home" ? hp : ap;
       const chosenEdge = chosenSide === "home" ? edgeHome : edgeAway;
-      return { gameId: row.game.id, side: chosenSide, edge: chosenEdge };
+      const inBand = chosenModelProb >= CONF_BAND_MIN && chosenModelProb <= CONF_BAND_MAX;
+
+      return { gameId: row.game.id, side: chosenSide, edge: chosenEdge, inBand };
     })
     .filter((x): x is NonNullable<typeof x> => x != null);
 
@@ -291,14 +302,25 @@ export function fullBankrollSuggestedByGameId(
     return empty;
   }
 
-  // Guarantee every matchup has at least some suggested bet.
-  const MIN_STAKE_PER_GAME = 10;
-  const minStakePerGame = Math.min(MIN_STAKE_PER_GAME, Math.floor(bankroll / Math.max(1, candidates.length)));
-  const baseStake = minStakePerGame * candidates.length;
-  const remaining = Math.max(0, bankroll - baseStake);
+  // Guarantee every matchup has at least some suggested bet,
+  // but scale down sizing outside the confidence band.
+  const MIN_STAKE_IN_BAND = 10;
+  const MIN_STAKE_OUTSIDE_BAND = 2;
 
-  const weights = candidates.map((c) => Math.max(0.01, c.edge + 0.02));
-  const sumW = weights.reduce((s, w) => s + w, 0);
+  const n = candidates.length;
+  const minStakes = candidates.map((c) => (c.inBand ? MIN_STAKE_IN_BAND : MIN_STAKE_OUTSIDE_BAND));
+  const totalMin = minStakes.reduce((s, x) => s + x, 0);
+
+  // If bankroll is too small, fall back to a uniform minimum.
+  const effectiveMinStakes =
+    totalMin > bankroll
+      ? new Array(n).fill(Math.max(0, Math.floor(bankroll / Math.max(1, n))))
+      : minStakes;
+
+  const remaining = Math.max(0, bankroll - effectiveMinStakes.reduce((s, x) => s + x, 0));
+
+  const weights = candidates.map((c) => (Math.max(0, c.edge) + 0.02) * (c.inBand ? 1 : OUTSIDE_CONF_MULT));
+  const sumW = weights.reduce((s, w) => s + w, 0) || 1;
   const rawExtra = weights.map((w) => (remaining * w) / sumW);
   const flooredExtra = rawExtra.map((x) => Math.floor(x));
   let extraRemainder = Math.max(0, remaining - flooredExtra.reduce((s, x) => s + x, 0));
@@ -318,7 +340,7 @@ export function fullBankrollSuggestedByGameId(
   // Default: no bet on any game unless it's a qualified candidate.
   for (const row of rows) empty.set(row.game.id, { home: 0, away: 0 });
   candidates.forEach((c, i) => {
-    const stake = Math.max(0, minStakePerGame + flooredExtra[i]);
+    const stake = Math.max(0, effectiveMinStakes[i] + flooredExtra[i]);
     empty.set(c.gameId, {
       home: c.side === "home" ? stake : 0,
       away: c.side === "away" ? stake : 0,
