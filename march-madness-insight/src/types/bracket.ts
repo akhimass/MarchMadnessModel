@@ -23,6 +23,19 @@ export interface TeamStats {
   masseyRank: number;
   svi: number;
   sviClass: 'True Contender' | 'Statistically Stable' | 'Elevated Risk' | 'Critical Risk';
+  /** National rank by net efficiency (among teams in model). */
+  netEffRank?: number;
+  /** Raw Massey composite rating. */
+  masseyRating?: number;
+  elo?: number;
+  pace?: number;
+  toRateDef?: number;
+  drRate?: number;
+  astRate?: number;
+  blkRate?: number;
+  stlRate?: number;
+  threePRate?: number;
+  threePARate?: number;
 }
 
 export interface InjuryImpact {
@@ -62,6 +75,8 @@ export interface MatchupPrediction {
   recencyUpdate?: RecencyUpdate;
   /** Massey ordinal national ranks from `/api/matchup` when MMasseyOrdinals data is loaded. */
   ordinalRanks?: Record<string, { team1: number; team2: number }>;
+  /** True when ensemble is not loaded — probabilities are seed/heuristic only. */
+  degraded?: boolean;
 }
 
 export interface BracketMatchup {

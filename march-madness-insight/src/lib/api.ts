@@ -166,6 +166,7 @@ const MOCK_MATCHUP: MatchupPrediction = {
     "The Blue Devils are a rebounding machine, dominating the glass at +1.65 SD above average. They protect the ball at an elite level and take efficient shots without FT-line dependence — the exact profile the model favors for March.",
   team2Narrative:
     "The Saints excel at limiting opponent FT attempts and generating turnovers defensively, but their 279th-ranked schedule hasn't prepared them for this level.",
+  degraded: false,
   injuryImpact: {
     adjustment: -0.08,
     severity: "high",
@@ -307,6 +308,8 @@ export const fetchMatchup = async (matchupId: string): Promise<MatchupPrediction
 
     const toTeamStats = (t: any): MatchupPrediction["team1Stats"] => {
       const sviClass = (t?.SVI_category ?? "Statistically Stable") as MatchupPrediction["team1Stats"]["sviClass"];
+      const mr = t?.massey_rank;
+      const ner = t?.neteff_rank;
       return {
         netEff: Number(t?.NetEff ?? 0),
         offEff: Number(t?.OffEff ?? 0),
@@ -316,9 +319,20 @@ export const fetchMatchup = async (matchupId: string): Promise<MatchupPrediction
         toRate: Number(t?.TO_rate_off ?? 0),
         orRate: Number(t?.OR_rate ?? 0),
         ftRate: Number(t?.FT_rate ?? 0),
-        masseyRank: Number(t?.massey_rank ?? 0),
+        masseyRank: typeof mr === "number" ? mr : Number(mr ?? 0),
         svi: Number(t?.SVI ?? 0),
         sviClass,
+        netEffRank: typeof ner === "number" ? ner : ner != null ? Number(ner) : undefined,
+        masseyRating: t?.massey_rating != null ? Number(t.massey_rating) : undefined,
+        elo: t?.elo != null ? Number(t.elo) : undefined,
+        pace: t?.Pace != null ? Number(t.Pace) : undefined,
+        toRateDef: t?.TO_rate_def != null ? Number(t.TO_rate_def) : undefined,
+        drRate: t?.DR_rate != null ? Number(t.DR_rate) : undefined,
+        astRate: t?.AstRate != null ? Number(t.AstRate) : undefined,
+        blkRate: t?.BlkRate != null ? Number(t.BlkRate) : undefined,
+        stlRate: t?.StlRate != null ? Number(t.StlRate) : undefined,
+        threePRate: t?.ThreePRate != null ? Number(t.ThreePRate) : undefined,
+        threePARate: t?.ThreePARate != null ? Number(t.ThreePARate) : undefined,
       };
     };
 
@@ -376,6 +390,7 @@ export const fetchMatchup = async (matchupId: string): Promise<MatchupPrediction
       standardProb: Number(matchupJson?.standard_prob ?? override?.standardProb ?? 0),
       chaosProb: Number(matchupJson?.chaos_prob ?? override?.chaosProb ?? 0),
       ordinalRanks: matchupJson?.ordinal_ranks as MatchupPrediction["ordinalRanks"] | undefined,
+      degraded: Boolean(matchupJson?.degraded),
       modelBreakdown: {
         decision_tree: Number(mb?.decision_tree ?? 0),
         power_ratings: Number(mb?.power_ratings ?? 0),

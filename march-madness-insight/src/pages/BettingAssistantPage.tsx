@@ -78,6 +78,18 @@ function resolveGameTeams(
 }
 
 const BettingAssistantPage = () => {
+  // Strategy knobs:
+  // - Default: bet the model-favorite side.
+  // - If model-favorite is in the 50–60% range: bet whichever side has higher edge/value.
+  // - Use 60/40 blend for value, but cap effective model confidence to 70/30.
+  // - 60/40 blend: ourProb = 0.6 * modelProb + 0.4 * marketImpliedProb.
+  const MIN_MODEL_FAV_PROB = 0.3;
+  const MAX_MODEL_FAV_PROB = 0.7;
+  const MODERATE_FAV_MIN = 0.5;
+  const MODERATE_FAV_MAX = 0.6;
+  const MODEL_WEIGHT = 0.6;
+  const MARKET_WEIGHT = 0.4;
+
   const ROUNDS = [
     { key: "R64", label: "Round of 64", status: "completed" as const },
     { key: "R32", label: "Round of 32", status: "completed" as const },
@@ -233,19 +245,6 @@ const BettingAssistantPage = () => {
     );
   }, [boardToRender]);
 
-  const suggestedByGameId = useMemo(
-    () => fullBankrollSuggestedByGameId(portfolioRows, bankroll),
-    [portfolioRows, bankroll],
-  );
-
-  const suggestedPortfolioTotal = useMemo(() => {
-    let s = 0;
-    suggestedByGameId.forEach((v) => {
-      s += v.home + v.away;
-    });
-    return s;
-  }, [suggestedByGameId]);
-
   const trackRecordQ = useQuery({
     queryKey: ["betting-track-record", completedQ.data],
     enabled: Boolean(completedQ.data?.length),
@@ -371,74 +370,116 @@ const BettingAssistantPage = () => {
     };
   }, [trackRecordQ.data]);
 
-  const valuePicks: BetSlipItem[] = useMemo(() => {
+  const strategyPortfolioRows = useMemo((): PortfolioProbRow[] => {
+    if (selectedRound !== "S16") return portfolioRows;
+
     const hot = new Set(calibration.hotTeams.map((x) => x.toLowerCase()));
     const luck = new Set(calibration.luckTeams.map((x) => x.toLowerCase()));
     const oneSeedShift = calibration.oneSeedOverconfidence > 0 ? -Math.min(0.03, calibration.oneSeedOverconfidence) : 0;
     const baseShift = calibration.overconfidence > 0 ? -Math.min(0.02, calibration.overconfidence) : 0;
-    const items: BetSlipItem[] = [];
-    for (const row of board.data ?? []) {
-      const { game, home, away, homeProb, awayProb } = row;
-      if (homeProb == null || awayProb == null) continue;
-      let homeAdj = homeProb + baseShift;
-      let awayAdj = awayProb + baseShift;
-      if ((home.seed ?? 0) === 1) homeAdj += oneSeedShift;
-      if ((away.seed ?? 0) === 1) awayAdj += oneSeedShift;
-      if (hot.has((home.teamName ?? "").toLowerCase())) homeAdj += 0.015;
-      if (luck.has((home.teamName ?? "").toLowerCase())) homeAdj -= 0.015;
-      if (hot.has((away.teamName ?? "").toLowerCase())) awayAdj += 0.015;
-      if (luck.has((away.teamName ?? "").toLowerCase())) awayAdj -= 0.015;
+
+    return portfolioRows.map((r) => {
+      let homeAdj = r.homeProb! + baseShift;
+      let awayAdj = r.awayProb! + baseShift;
+
+      if ((r.home.seed ?? 0) === 1) homeAdj += oneSeedShift;
+      if ((r.away.seed ?? 0) === 1) awayAdj += oneSeedShift;
+
+      if (hot.has((r.home.teamName ?? "").toLowerCase())) homeAdj += 0.015;
+      if (luck.has((r.home.teamName ?? "").toLowerCase())) homeAdj -= 0.015;
+      if (hot.has((r.away.teamName ?? "").toLowerCase())) awayAdj += 0.015;
+      if (luck.has((r.away.teamName ?? "").toLowerCase())) awayAdj -= 0.015;
+
       homeAdj = clamp01(homeAdj);
       awayAdj = clamp01(awayAdj);
-      const hOdds = getConsensusOdds(game, game.home_team, "h2h");
-      const aOdds = getConsensusOdds(game, game.away_team, "h2h");
-      if (hOdds != null) {
-        const implied = americanToImpliedProb(hOdds);
-        const edge = homeAdj - implied;
-        const stake = 100;
-        const ev = calculateEV(homeAdj, hOdds, stake);
-        items.push({
-          id: `${game.id}-h-${home.teamId}`,
-          teamName: bettingTeamLabel(home),
-          teamId: home.teamId,
-          opponentId: away.teamId,
-          opponentName: bettingTeamLabel(away),
-          americanOdds: hOdds,
-          stake,
-          ourProb: homeAdj,
-          adjustedProb: homeAdj,
-          impliedProb: implied,
-          edge,
-          ev,
-          game,
-          round: inferNcaaRoundFromCommence(game.commence_time, game.roundLabel),
-        });
-      }
-      if (aOdds != null) {
-        const implied = americanToImpliedProb(aOdds);
-        const edge = awayAdj - implied;
-        const stake = 100;
-        const ev = calculateEV(awayAdj, aOdds, stake);
-        items.push({
-          id: `${game.id}-a-${away.teamId}`,
-          teamName: bettingTeamLabel(away),
-          teamId: away.teamId,
-          opponentId: home.teamId,
-          opponentName: bettingTeamLabel(home),
-          americanOdds: aOdds,
-          stake,
-          ourProb: awayAdj,
-          adjustedProb: awayAdj,
-          impliedProb: implied,
-          edge,
-          ev,
-          game,
-          round: inferNcaaRoundFromCommence(game.commence_time, game.roundLabel),
-        });
-      }
+
+      return { ...r, homeProb: homeAdj, awayProb: awayAdj };
+    });
+  }, [portfolioRows, calibration, selectedRound]);
+
+  const strategySuggestedByGameId = useMemo(
+    () => fullBankrollSuggestedByGameId(strategyPortfolioRows, bankroll),
+    [strategyPortfolioRows, bankroll],
+  );
+
+  const strategySuggestedPortfolioTotal = useMemo(() => {
+    let s = 0;
+    strategySuggestedByGameId.forEach((v) => {
+      s += v.home + v.away;
+    });
+    return s;
+  }, [strategySuggestedByGameId]);
+
+  const strategyProbLookup = useMemo(() => {
+    const m = new Map<string, { homeProb: number; awayProb: number }>();
+    for (const r of strategyPortfolioRows) {
+      m.set(`${r.game.id}-${r.home.teamId}-${r.away.teamId}`, { homeProb: r.homeProb!, awayProb: r.awayProb! });
+    }
+    return m;
+  }, [strategyPortfolioRows]);
+
+  const valuePicks: BetSlipItem[] = useMemo(() => {
+    // Picks follow the same betting strategy as the suggested bet buttons.
+    const items: BetSlipItem[] = [];
+    for (const row of strategyPortfolioRows) {
+      const { game, home, away, homeProb, awayProb } = row;
+      if (homeProb == null || awayProb == null) continue;
+
+      const modelFavSide = homeProb >= awayProb ? ("home" as const) : ("away" as const);
+      const modelFavProb = modelFavSide === "home" ? homeProb : awayProb;
+      const modelFavInModerateRange = modelFavProb >= MODERATE_FAV_MIN && modelFavProb <= MODERATE_FAV_MAX;
+
+      const homeAmerican = getConsensusOdds(game, game.home_team, "h2h");
+      const awayAmerican = getConsensusOdds(game, game.away_team, "h2h");
+      if (homeAmerican == null || awayAmerican == null) continue;
+
+      const impliedHome = americanToImpliedProb(homeAmerican);
+      const impliedAway = americanToImpliedProb(awayAmerican);
+
+      const blendedHome = MODEL_WEIGHT * homeProb + MARKET_WEIGHT * impliedHome;
+      const blendedAway = MODEL_WEIGHT * awayProb + MARKET_WEIGHT * impliedAway;
+      const cappedHome = Math.max(MIN_MODEL_FAV_PROB, Math.min(MAX_MODEL_FAV_PROB, blendedHome));
+      const cappedAway = Math.max(MIN_MODEL_FAV_PROB, Math.min(MAX_MODEL_FAV_PROB, blendedAway));
+
+      const edgeHome = cappedHome - impliedHome;
+      const edgeAway = cappedAway - impliedAway;
+      const chosenSide = modelFavInModerateRange ? (edgeHome >= edgeAway ? ("home" as const) : ("away" as const)) : modelFavSide;
+      const chosenEdge = chosenSide === "home" ? edgeHome : edgeAway;
+      if (chosenEdge <= 0) continue;
+
+      const chosenProb = chosenSide === "home" ? cappedHome : cappedAway;
+      const chosenAmerican = chosenSide === "home" ? homeAmerican : awayAmerican;
+      const chosenImplied = chosenSide === "home" ? impliedHome : impliedAway;
+
+      const favTeam = chosenSide === "home" ? home : away;
+      const oppTeam = chosenSide === "home" ? away : home;
+      const american = chosenAmerican;
+      const prob = chosenProb;
+      const implied = chosenImplied;
+      const edge = chosenEdge;
+
+      const stake = 100;
+      const ev = calculateEV(prob, american, stake);
+
+      items.push({
+        id: `${game.id}-${chosenSide === "home" ? "h" : "a"}-${favTeam.teamId}`,
+        teamName: bettingTeamLabel(favTeam),
+        teamId: favTeam.teamId,
+        opponentId: oppTeam.teamId,
+        opponentName: bettingTeamLabel(oppTeam),
+        americanOdds: american,
+        stake,
+        ourProb: prob,
+        adjustedProb: prob,
+        impliedProb: implied,
+        edge,
+        ev,
+        game,
+        round: inferNcaaRoundFromCommence(game.commence_time, game.roundLabel),
+      });
     }
     return items;
-  }, [board.data, calibration]);
+  }, [strategyPortfolioRows, MODERATE_FAV_MIN, MODERATE_FAV_MAX, MIN_MODEL_FAV_PROB, MAX_MODEL_FAV_PROB, MODEL_WEIGHT, MARKET_WEIGHT]);
 
   const filteredValuePicks = useMemo(
     () => valuePicks.filter((p) => (p.round ?? "R64") === selectedRound),
@@ -449,21 +490,47 @@ const BettingAssistantPage = () => {
     (row: BoardRow, side: "home" | "away") => {
       const team = side === "home" ? row.home : row.away;
       const opp = side === "home" ? row.away : row.home;
-      const baseProb = side === "home" ? row.homeProb : row.awayProb;
-      const oddsName = side === "home" ? row.game.home_team : row.game.away_team;
-      if (baseProb == null) return;
-      const american = getConsensusOdds(row.game, oddsName, "h2h");
-      if (american == null) return;
-      const adjustedFromValuePick = valuePicks.find(
-        (v) =>
-          v.game.id === row.game.id &&
-          v.teamId === team.teamId &&
-          v.opponentId === opp.teamId,
-      )?.ourProb;
-      const prob = adjustedFromValuePick ?? baseProb;
-      const implied = americanToImpliedProb(american);
-      const edge = prob - implied;
-      const stake = Math.max(10, kellyBet(prob, american, bankroll));
+      const calibrated = strategyPortfolioRows.find(
+        (r) => r.game.id === row.game.id && r.home.teamId === row.home.teamId && r.away.teamId === row.away.teamId,
+      );
+      const baseHomeProb = calibrated?.homeProb ?? row.homeProb;
+      const baseAwayProb = calibrated?.awayProb ?? row.awayProb;
+      if (baseHomeProb == null || baseAwayProb == null) return;
+
+      const modelFavSide = baseHomeProb >= baseAwayProb ? "home" : "away";
+      const modelFavProb = modelFavSide === "home" ? baseHomeProb : baseAwayProb;
+      const modelFavInModerateRange = modelFavProb >= MODERATE_FAV_MIN && modelFavProb <= MODERATE_FAV_MAX;
+
+      const homeAmerican = getConsensusOdds(row.game, row.game.home_team, "h2h");
+      const awayAmerican = getConsensusOdds(row.game, row.game.away_team, "h2h");
+      if (homeAmerican == null || awayAmerican == null) return;
+
+      const impliedHome = americanToImpliedProb(homeAmerican);
+      const impliedAway = americanToImpliedProb(awayAmerican);
+
+      const blendedHome = MODEL_WEIGHT * baseHomeProb + MARKET_WEIGHT * impliedHome;
+      const blendedAway = MODEL_WEIGHT * baseAwayProb + MARKET_WEIGHT * impliedAway;
+      const cappedHome = Math.max(MIN_MODEL_FAV_PROB, Math.min(MAX_MODEL_FAV_PROB, blendedHome));
+      const cappedAway = Math.max(MIN_MODEL_FAV_PROB, Math.min(MAX_MODEL_FAV_PROB, blendedAway));
+
+      const edgeHome = cappedHome - impliedHome;
+      const edgeAway = cappedAway - impliedAway;
+
+      const chosenSide: "home" | "away" = modelFavInModerateRange ? (edgeHome >= edgeAway ? "home" : "away") : modelFavSide;
+      if (side !== chosenSide) return; // strategy: bet higher value in moderate range, otherwise model favorite
+
+      const american = chosenSide === "home" ? homeAmerican : awayAmerican;
+      const implied = chosenSide === "home" ? impliedHome : impliedAway;
+      const prob = chosenSide === "home" ? cappedHome : cappedAway;
+      const edge = chosenSide === "home" ? edgeHome : edgeAway;
+
+      const suggested = strategySuggestedByGameId.get(row.game.id);
+      const suggestedStakeForSide = suggested ? (side === "home" ? suggested.home : suggested.away) : 0;
+
+      const kelly = kellyBet(prob, american, bankroll);
+      const stake = suggestedStakeForSide > 0 ? suggestedStakeForSide : Math.max(0, kelly);
+      if (stake <= 0) return;
+
       const ev = calculateEV(prob, american, stake);
       const pct = bankroll > 0 ? stake / bankroll : 0;
       const stakeBand: BetSlipItem["stakeBand"] = pct >= 0.06 ? "high" : pct >= 0.03 ? "medium" : "low";
@@ -492,11 +559,11 @@ const BettingAssistantPage = () => {
       toast.success(`Added ${item.teamName} ML to bet slip · $${Math.round(stake)} suggested`);
       slipRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     },
-    [bankroll, valuePicks],
+    [bankroll, MIN_MODEL_FAV_PROB, MAX_MODEL_FAV_PROB, MODERATE_FAV_MIN, MODERATE_FAV_MAX, MODEL_WEIGHT, MARKET_WEIGHT, strategySuggestedByGameId, strategyPortfolioRows],
   );
 
   const buildAiSlip = useCallback(() => {
-    const rows = portfolioRows;
+    const rows = strategyPortfolioRows;
     if (!rows.length || bankroll <= 0) return;
     const byGame = fullBankrollSuggestedByGameId(rows, bankroll);
     const items: BetSlipItem[] = [];
@@ -508,11 +575,13 @@ const BettingAssistantPage = () => {
       const side = st.home > 0 ? "home" : "away";
       const team = side === "home" ? row.home : row.away;
       const opp = side === "home" ? row.away : row.home;
-      const prob = side === "home" ? row.homeProb! : row.awayProb!;
+      const modelProb = side === "home" ? row.homeProb! : row.awayProb!;
       const oddsName = side === "home" ? row.game.home_team : row.game.away_team;
       const american = getConsensusOdds(row.game, oddsName, "h2h");
       if (american == null) continue;
       const implied = americanToImpliedProb(american);
+      const blendedProb = MODEL_WEIGHT * modelProb + MARKET_WEIGHT * implied;
+      const prob = Math.max(MIN_MODEL_FAV_PROB, Math.min(MAX_MODEL_FAV_PROB, blendedProb));
       const edge = prob - implied;
       const pct = bankroll > 0 ? stake / bankroll : 0;
       const stakeBand: BetSlipItem["stakeBand"] = pct >= 0.06 ? "high" : pct >= 0.03 ? "medium" : "low";
@@ -536,7 +605,7 @@ const BettingAssistantPage = () => {
     }
     setSlip(items);
     toast.success(`AI slip built: ${items.length} bets totaling $${items.reduce((s, x) => s + x.stake, 0).toFixed(0)}`);
-  }, [portfolioRows, bankroll]);
+  }, [strategyPortfolioRows, bankroll, MODEL_WEIGHT, MARKET_WEIGHT, MIN_MODEL_FAV_PROB, MAX_MODEL_FAV_PROB]);
 
   const updateStake = useCallback((id: string, stake: number) => {
     setSlip((prev) =>
@@ -587,7 +656,11 @@ const BettingAssistantPage = () => {
       <div className="border-b border-border bg-[hsl(var(--bg-surface))] px-4 py-6">
         <div className="mx-auto max-w-6xl">
           <h1 className="font-display text-2xl font-bold uppercase tracking-tight text-white">BETTING ASSISTANT</h1>
-          <p className="mt-1 text-sm text-muted-foreground">ML model win probabilities vs live markets · +EV finder</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Suggested stakes and edges use the API ensemble win probability (<code className="text-foreground/90">/api/matchup</code>)
+            blended with book implied odds (60/40) to maximize value.
+            The effective confidence is capped to 70/30 for extreme favorites.
+          </p>
           {requestsRemaining != null && !Number.isNaN(requestsRemaining) && requestsRemaining < 50 ? (
             <p className="mt-2 text-xs font-semibold text-amber-500">
               ⚠ Only {requestsRemaining} Odds API requests remaining this month
@@ -759,7 +832,7 @@ const BettingAssistantPage = () => {
             <h2 className="font-display text-sm font-bold uppercase tracking-wider text-white">Live games + odds</h2>
             {portfolioRows.length > 0 && bankroll > 0 ? (
               <p className="text-[10px] text-muted-foreground">
-                Suggested bet buttons split the full bankroll (${bankroll.toFixed(0)}) across this round — total ${suggestedPortfolioTotal} (same weights as AI slip).
+                Suggested bet buttons split the full bankroll (${bankroll.toFixed(0)}) across this round — total ${strategySuggestedPortfolioTotal} (same weights as AI slip).
               </p>
             ) : null}
           </div>
@@ -767,24 +840,28 @@ const BettingAssistantPage = () => {
             <p className="text-sm text-muted-foreground">Loading…</p>
           ) : null}
           <div className="space-y-4">
-            {boardToRender.map((row) => (
-              <GameOddsCard
-                key={row.game.id}
-                game={row.game}
-                homeName={bettingTeamLabel(row.home)}
-                awayName={bettingTeamLabel(row.away)}
-                homeOddsName={row.game.home_team}
-                awayOddsName={row.game.away_team}
-                homeProb={row.homeProb}
-                awayProb={row.awayProb}
-                suggestedStake={suggestedByGameId.get(row.game.id) ?? { home: 0, away: 0 }}
-                resultSummary={"resultSummary" in row ? row.resultSummary : undefined}
-                homeTeamId={row.home.teamId}
-                awayTeamId={row.away.teamId}
-                onAdd={(side) => addToSlip(row, side)}
-                addedState={recentlyAdded}
-              />
-            ))}
+            {boardToRender.map((row) => {
+              const lookupKey = `${row.game.id}-${row.home.teamId}-${row.away.teamId}`;
+              const probs = strategyProbLookup.get(lookupKey);
+              return (
+                <GameOddsCard
+                  key={row.game.id}
+                  game={row.game}
+                  homeName={bettingTeamLabel(row.home)}
+                  awayName={bettingTeamLabel(row.away)}
+                  homeOddsName={row.game.home_team}
+                  awayOddsName={row.game.away_team}
+                  homeProb={probs?.homeProb ?? row.homeProb}
+                  awayProb={probs?.awayProb ?? row.awayProb}
+                  suggestedStake={strategySuggestedByGameId.get(row.game.id) ?? { home: 0, away: 0 }}
+                  resultSummary={"resultSummary" in row ? row.resultSummary : undefined}
+                  homeTeamId={row.home.teamId}
+                  awayTeamId={row.away.teamId}
+                  onAdd={(side) => addToSlip(row, side)}
+                  addedState={recentlyAdded}
+                />
+              );
+            })}
             {!oddsLoading && !board.isLoading && boardToRender.length === 0 ? (
               <p className="text-sm text-muted-foreground">No games available for {selectedRound}.</p>
             ) : null}

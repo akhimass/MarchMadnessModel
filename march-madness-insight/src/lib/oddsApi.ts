@@ -230,45 +230,96 @@ export function fullBankrollSuggestedByGameId(
   rows: PortfolioProbRow[],
   bankroll: number,
 ): Map<string, { home: number; away: number }> {
+  // Strategy:
+  // - Bet on the model-favorite side only.
+  // - Blend model probability with market implied probability (60/40) to maximize value.
+  // - Cap effective model confidence to 70/30 so extreme favorites don't dominate sizing.
+  const MIN_MODEL_FAV_PROB = 0.3;
+  const MAX_MODEL_FAV_PROB = 0.7;
+  const MODEL_WEIGHT = 0.6;
+  const MARKET_WEIGHT = 0.4;
+  const MODERATE_FAV_MIN = 0.5;
+  const MODERATE_FAV_MAX = 0.6;
+
   const empty = new Map<string, { home: number; away: number }>();
   if (bankroll <= 0 || !rows.length) {
     for (const r of rows) empty.set(r.game.id, { home: 0, away: 0 });
     return empty;
   }
 
-  const candidates = rows.map((row) => {
-    const homeOdds = getConsensusOdds(row.game, row.game.home_team ?? "", "h2h");
-    const awayOdds = getConsensusOdds(row.game, row.game.away_team ?? "", "h2h");
-    const hp = row.homeProb ?? 0.5;
-    const ap = row.awayProb ?? 0.5;
-    const homeEdge = homeOdds != null ? hp - americanToImpliedProb(homeOdds) : -999;
-    const awayEdge = awayOdds != null ? ap - americanToImpliedProb(awayOdds) : -999;
-    if (homeEdge >= awayEdge && homeOdds != null) {
-      return { gameId: row.game.id, side: "home" as const, edge: homeEdge };
-    }
-    return { gameId: row.game.id, side: "away" as const, edge: awayEdge };
-  });
+  const candidates = rows
+    .map((row) => {
+      const homeOdds = getConsensusOdds(row.game, row.game.home_team ?? "", "h2h");
+      const awayOdds = getConsensusOdds(row.game, row.game.away_team ?? "", "h2h");
+      if (homeOdds == null || awayOdds == null) return null;
+
+      const hp = row.homeProb ?? 0.5;
+      const ap = row.awayProb ?? 0.5;
+      const modelFavSide = hp >= ap ? ("home" as const) : ("away" as const);
+      const modelFavProb = modelFavSide === "home" ? hp : ap;
+      const modelFavInModerateRange = modelFavProb >= MODERATE_FAV_MIN && modelFavProb <= MODERATE_FAV_MAX;
+
+      const impliedHomeProb = americanToImpliedProb(homeOdds);
+      const impliedAwayProb = americanToImpliedProb(awayOdds);
+
+      // 60/40 blend for *each* side, then cap effective confidence to [0.3, 0.7].
+      const blendedHome = MODEL_WEIGHT * hp + MARKET_WEIGHT * impliedHomeProb;
+      const blendedAway = MODEL_WEIGHT * ap + MARKET_WEIGHT * impliedAwayProb;
+      const cappedHome = Math.max(MIN_MODEL_FAV_PROB, Math.min(MAX_MODEL_FAV_PROB, blendedHome));
+      const cappedAway = Math.max(MIN_MODEL_FAV_PROB, Math.min(MAX_MODEL_FAV_PROB, blendedAway));
+
+      const edgeHome = cappedHome - impliedHomeProb;
+      const edgeAway = cappedAway - impliedAwayProb;
+
+      // If we're in the near coinflip band (50-60% model favorite),
+      // bet the side with higher edge/value (not necessarily the model favorite).
+      // Otherwise, default to model-favorite side.
+      let chosenSide: "home" | "away";
+      if (modelFavInModerateRange) {
+        chosenSide = edgeHome >= edgeAway ? "home" : "away";
+      } else {
+        chosenSide = modelFavSide;
+      }
+
+      const chosenEdge = chosenSide === "home" ? edgeHome : edgeAway;
+      return { gameId: row.game.id, side: chosenSide, edge: chosenEdge };
+    })
+    .filter((x): x is NonNullable<typeof x> => x != null);
+
+  if (!candidates.length) {
+    for (const row of rows) empty.set(row.game.id, { home: 0, away: 0 });
+    return empty;
+  }
+
+  // Guarantee every matchup has at least some suggested bet.
+  const MIN_STAKE_PER_GAME = 10;
+  const minStakePerGame = Math.min(MIN_STAKE_PER_GAME, Math.floor(bankroll / Math.max(1, candidates.length)));
+  const baseStake = minStakePerGame * candidates.length;
+  const remaining = Math.max(0, bankroll - baseStake);
 
   const weights = candidates.map((c) => Math.max(0.01, c.edge + 0.02));
   const sumW = weights.reduce((s, w) => s + w, 0);
-  const rawStakes = weights.map((w) => (bankroll * w) / sumW);
-  const floored = rawStakes.map((x) => Math.floor(x));
-  let remainder = Math.max(0, Math.round(bankroll - floored.reduce((s, x) => s + x, 0)));
-  const fracIdx = rawStakes
+  const rawExtra = weights.map((w) => (remaining * w) / sumW);
+  const flooredExtra = rawExtra.map((x) => Math.floor(x));
+  let extraRemainder = Math.max(0, remaining - flooredExtra.reduce((s, x) => s + x, 0));
+
+  const fracIdx = rawExtra
     .map((x, i) => ({ i, frac: x - Math.floor(x) }))
     .sort((a, b) => b.frac - a.frac)
     .map((x) => x.i);
+
   let k = 0;
-  while (remainder > 0 && fracIdx.length > 0) {
-    floored[fracIdx[k % fracIdx.length]] += 1;
-    remainder -= 1;
+  while (extraRemainder > 0 && fracIdx.length > 0) {
+    flooredExtra[fracIdx[k % fracIdx.length]] += 1;
+    extraRemainder -= 1;
     k += 1;
   }
 
-  rows.forEach((row, i) => {
-    const c = candidates[i];
-    const stake = Math.max(0, floored[i]);
-    empty.set(row.game.id, {
+  // Default: no bet on any game unless it's a qualified candidate.
+  for (const row of rows) empty.set(row.game.id, { home: 0, away: 0 });
+  candidates.forEach((c, i) => {
+    const stake = Math.max(0, minStakePerGame + flooredExtra[i]);
+    empty.set(c.gameId, {
       home: c.side === "home" ? stake : 0,
       away: c.side === "away" ? stake : 0,
     });

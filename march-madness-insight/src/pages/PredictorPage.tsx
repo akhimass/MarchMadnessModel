@@ -245,7 +245,17 @@ const PredictorPage = () => {
     );
   }
 
-  const { team1, team2, standardProb, modelBreakdown, upsetAlert, giantKillerScore, injuryImpact, ordinalRanks } = matchup;
+  const {
+    team1,
+    team2,
+    standardProb,
+    modelBreakdown,
+    upsetAlert,
+    giantKillerScore,
+    injuryImpact,
+    ordinalRanks,
+    degraded,
+  } = matchup;
 
   const totalPicks = Object.keys(picksForGender ?? {}).length;
   const picksRemaining = 63 - totalPicks;
@@ -433,6 +443,8 @@ const PredictorPage = () => {
                   team1Abbrev={team1.abbreviation}
                   team2Abbrev={team2.abbreviation}
                   team1Color={team1.color}
+                  team1LogoUrl={team1.logoUrl}
+                  team2LogoUrl={team2.logoUrl}
                 />
               </CardContent>
             </Card>
@@ -450,6 +462,7 @@ const PredictorPage = () => {
                   team1Abbrev={team1.abbreviation}
                   team2Abbrev={team2.abbreviation}
                   team1Color={team1.color}
+                  degraded={degraded}
                 />
               </CardContent>
             </Card>
@@ -470,9 +483,21 @@ const PredictorPage = () => {
               <CardContent className="space-y-3">
                 <ScrollArea className="h-[min(70vh,40rem)] pr-3">
                   <div className="space-y-3 pb-2">
-                    <TeamStatHighlights team={team1} stats={matchup.team1Stats} narrative={matchup.team1Narrative} />
+                    <TeamStatHighlights
+                      team={team1}
+                      stats={matchup.team1Stats}
+                      narrative={matchup.team1Narrative}
+                      teamSide={1}
+                      ordinalRanks={ordinalRanks}
+                    />
                     <Separator />
-                    <TeamStatHighlights team={team2} stats={matchup.team2Stats} narrative={matchup.team2Narrative} />
+                    <TeamStatHighlights
+                      team={team2}
+                      stats={matchup.team2Stats}
+                      narrative={matchup.team2Narrative}
+                      teamSide={2}
+                      ordinalRanks={ordinalRanks}
+                    />
                   </div>
                 </ScrollArea>
               </CardContent>
