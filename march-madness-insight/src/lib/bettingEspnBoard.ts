@@ -153,12 +153,14 @@ export async function fetchMenBracketScoreboardForRound(selectedRound: string): 
   if (!datesKey || !expected) return [];
 
   const dates = TOURNAMENT_DATES[datesKey];
+  // Fetch every calendar day in this round (Thu/Fri for S16, etc.) so we don't miss games
+  // before "today" in ET crosses the next day; backend may still return empty for future dates.
   const maxDay = todayEtYyyymmdd();
   const activeDays = dates.filter((d) => d <= maxDay);
-  if (!activeDays.length) return [];
+  const daysToQuery = activeDays.length > 0 ? activeDays : dates;
 
   const fetched = await Promise.allSettled(
-    activeDays.map((d) => fetchScoreboard("M", toIsoDate(d), { allowFallback: false })),
+    daysToQuery.map((d) => fetchScoreboard("M", toIsoDate(d), { allowFallback: true })),
   );
   const games = fetched
     .filter((r): r is PromiseFulfilledResult<LiveGame[]> => r.status === "fulfilled")
@@ -193,6 +195,20 @@ export type BettingCandidate = {
  * Prefer ESPN bracket order when games exist (correct matchups during/after the round).
  * Fall back to Odds API / canonical slate when ESPN has not published games yet.
  */
+function bettingCandidatesFromOddsOnly(
+  mergedOddsGames: OddsGame[],
+  teams: Team2026Row[],
+): BettingCandidate[] {
+  const out: BettingCandidate[] = [];
+  for (const game of mergedOddsGames) {
+    const res = resolveGameTeams(game, teams);
+    if (!res) continue;
+    out.push({ game, home: res.home, away: res.away, espn: null });
+    if (out.length >= 24) break;
+  }
+  return out;
+}
+
 export function buildBettingCandidates(
   mergedOddsGames: OddsGame[],
   teams: Team2026Row[],
@@ -200,7 +216,7 @@ export function buildBettingCandidates(
   selectedRound: string,
 ): BettingCandidate[] {
   const seen = new Set<string>();
-  const out: BettingCandidate[] = [];
+  const fromEspn: BettingCandidate[] = [];
 
   if (espnRows.length > 0) {
     for (const row of espnRows) {
@@ -213,19 +229,13 @@ export function buildBettingCandidates(
         teams.find((t) => t.teamId === row.awayKaggleId) ?? team2026RowFromStaticId(row.awayKaggleId);
       if (!home?.teamId || !away?.teamId) continue;
       const game = oddsGame ?? syntheticOddsGameFromEspn(row.espn, home, away, selectedRound);
-      out.push({ game, home, away, espn: row.espn });
+      fromEspn.push({ game, home, away, espn: row.espn });
       seen.add(key);
     }
-    return out;
+    if (fromEspn.length > 0) return fromEspn;
   }
 
-  for (const game of mergedOddsGames) {
-    const res = resolveGameTeams(game, teams);
-    if (!res) continue;
-    out.push({ game, home: res.home, away: res.away, espn: null });
-    if (out.length >= 24) break;
-  }
-  return out;
+  return bettingCandidatesFromOddsOnly(mergedOddsGames, teams);
 }
 
 export function scoreboardMetaForRow(

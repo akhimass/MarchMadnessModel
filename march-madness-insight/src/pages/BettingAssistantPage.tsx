@@ -167,18 +167,23 @@ const BettingAssistantPage = () => {
       const candidates = buildBettingCandidates(mergedOddsGames, teams, espnRows, selectedRound);
       return Promise.all(
         candidates.map(async ({ game, home, away, espn }) => {
-          const lo = Math.min(home.teamId, away.teamId);
-          const hi = Math.max(home.teamId, away.teamId);
-          const p = await fetchMatchupStandardProb(lo, hi, "M");
-          const homeIsLo = home.teamId === lo;
-          const homeProb = p == null ? null : homeIsLo ? p : 1 - p;
-          const awayProb = p == null ? null : homeIsLo ? 1 - p : p;
           const meta = scoreboardMetaForRow(espn, home, away);
-          return { game, home, away, homeProb, awayProb, ...meta };
+          try {
+            const lo = Math.min(home.teamId, away.teamId);
+            const hi = Math.max(home.teamId, away.teamId);
+            const p = await fetchMatchupStandardProb(lo, hi, "M");
+            const homeIsLo = home.teamId === lo;
+            const homeProb = p == null ? null : homeIsLo ? p : 1 - p;
+            const awayProb = p == null ? null : homeIsLo ? 1 - p : p;
+            return { game, home, away, homeProb, awayProb, ...meta };
+          } catch {
+            return { game, home, away, homeProb: null, awayProb: null, ...meta };
+          }
         }),
       );
     },
-    enabled: oddsMeta !== undefined && bracketRoundSelected,
+    // Do not gate on Odds API success — use mock S16 slate when the key is missing or the request fails.
+    enabled: bracketRoundSelected,
     staleTime: 60_000,
     refetchInterval: bracketRoundSelected ? 30_000 : false,
   });
