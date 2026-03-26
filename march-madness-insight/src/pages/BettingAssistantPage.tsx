@@ -8,6 +8,11 @@ import { TopValuePicks } from "@/components/betting/TopValuePicks";
 import type { Team2026Row } from "@/lib/api";
 import { fetchMatchupStandardProb, fetchNarrative, fetchR64R32Accuracy, fetchTeams2026 } from "@/lib/api";
 import {
+  buildBettingCandidates,
+  fetchMenBracketScoreboardForRound,
+  scoreboardMetaForRow,
+} from "@/lib/bettingEspnBoard";
+import {
   americanToImpliedProb,
   buildBettingOddsGameList,
   calculateEV,
@@ -44,9 +49,13 @@ interface BoardRow {
   away: Team2026Row;
   homeProb: number | null;
   awayProb: number | null;
+  resultSummary?: string;
+  /** When true, show final score only — no bet actions (Sweet 16+ finals). */
+  resultsOnly?: boolean;
 }
 interface CompletedBoardRow extends BoardRow {
   resultSummary: string;
+  resultsOnly?: boolean;
 }
 
 function clamp01(n: number): number {
@@ -149,39 +158,30 @@ const BettingAssistantPage = () => {
   const mergedOddsGames = useMemo(() => buildBettingOddsGameList(oddsGames), [oddsGames]);
   const requestsRemaining = oddsMeta?.requestsRemaining != null ? parseInt(String(oddsMeta.requestsRemaining), 10) : null;
 
+  const bracketRoundSelected = ["S16", "E8", "F4", "CHAMP"].includes(selectedRound);
+
   const board = useQuery({
-    queryKey: ["betting-board", teams, mergedOddsGames],
+    queryKey: ["betting-board", teams, mergedOddsGames, selectedRound],
     queryFn: async () => {
-      const list = mergedOddsGames;
-      const candidates: Array<{ game: OddsGame; home: Team2026Row; away: Team2026Row }> = [];
-      for (const game of list) {
-        const res = resolveGameTeams(game, teams);
-        if (!res) continue;
-        candidates.push({ game, home: res.home, away: res.away });
-        if (candidates.length >= 24) break;
-      }
+      const espnRows = await fetchMenBracketScoreboardForRound(selectedRound);
+      const candidates = buildBettingCandidates(mergedOddsGames, teams, espnRows, selectedRound);
       return Promise.all(
-        candidates.map(async ({ game, home, away }) => {
+        candidates.map(async ({ game, home, away, espn }) => {
           const lo = Math.min(home.teamId, away.teamId);
           const hi = Math.max(home.teamId, away.teamId);
           const p = await fetchMatchupStandardProb(lo, hi, "M");
           const homeIsLo = home.teamId === lo;
           const homeProb = p == null ? null : homeIsLo ? p : 1 - p;
           const awayProb = p == null ? null : homeIsLo ? 1 - p : p;
-          return { game, home, away, homeProb, awayProb };
+          const meta = scoreboardMetaForRow(espn, home, away);
+          return { game, home, away, homeProb, awayProb, ...meta };
         }),
       );
     },
-    enabled: oddsMeta !== undefined,
+    enabled: oddsMeta !== undefined && bracketRoundSelected,
+    staleTime: 60_000,
+    refetchInterval: bracketRoundSelected ? 30_000 : false,
   });
-
-  const filteredBoard = useMemo(
-    () =>
-      (board.data ?? []).filter(
-        (r) => inferNcaaRoundFromCommence(r.game.commence_time, r.game.roundLabel) === selectedRound,
-      ),
-    [board.data, selectedRound],
-  );
   const completedRoundsBoardQ = useQuery({
     queryKey: ["completed-round-board", completedQ.data, teams, selectedRound],
     enabled: Boolean((selectedRound === "R64" || selectedRound === "R32") && completedQ.data?.length),
@@ -227,6 +227,7 @@ const BettingAssistantPage = () => {
             homeProb,
             awayProb,
             resultSummary: `Final: ${winner} ${g.home.score}-${g.away.score}`,
+            resultsOnly: true,
           } satisfies CompletedBoardRow;
         }),
       );
@@ -235,14 +236,16 @@ const BettingAssistantPage = () => {
   });
   const boardToRender: Array<BoardRow | CompletedBoardRow> = useMemo(() => {
     if (selectedRound === "R64" || selectedRound === "R32") return completedRoundsBoardQ.data ?? [];
-    return filteredBoard;
-  }, [selectedRound, completedRoundsBoardQ.data, filteredBoard]);
+    return board.data ?? [];
+  }, [selectedRound, completedRoundsBoardQ.data, board.data]);
 
   const portfolioRows = useMemo((): PortfolioProbRow[] => {
-    return (boardToRender as BoardRow[]).filter(
-      (r): r is PortfolioProbRow =>
-        r.homeProb != null && r.awayProb != null && r.home.teamId != null && r.away.teamId != null,
-    );
+    return (boardToRender as BoardRow[])
+      .filter((r) => !r.resultsOnly)
+      .filter(
+        (r): r is PortfolioProbRow =>
+          r.homeProb != null && r.awayProb != null && r.home.teamId != null && r.away.teamId != null,
+      );
   }, [boardToRender]);
 
   const trackRecordQ = useQuery({
@@ -498,6 +501,7 @@ const BettingAssistantPage = () => {
 
   const addToSlip = useCallback(
     (row: BoardRow, side: "home" | "away") => {
+      if (row.resultsOnly) return;
       const team = side === "home" ? row.home : row.away;
       const opp = side === "home" ? row.away : row.home;
       const calibrated = strategyPortfolioRows.find(
@@ -874,6 +878,7 @@ const BettingAssistantPage = () => {
                   awayProb={probs?.awayProb ?? row.awayProb}
                   suggestedStake={strategySuggestedByGameId.get(row.game.id) ?? { home: 0, away: 0 }}
                   resultSummary={"resultSummary" in row ? row.resultSummary : undefined}
+                  resultsOnly={Boolean(row.resultsOnly)}
                   homeTeamId={row.home.teamId}
                   awayTeamId={row.away.teamId}
                   onAdd={(side) => addToSlip(row, side)}

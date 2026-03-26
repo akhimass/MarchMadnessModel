@@ -41,6 +41,7 @@ export function GameOddsCard({
   addedState,
   suggestedStake,
   resultSummary,
+  resultsOnly,
   homeTeamId,
   awayTeamId,
 }: {
@@ -56,15 +57,18 @@ export function GameOddsCard({
   addedState?: Record<string, boolean>;
   suggestedStake?: { home?: number; away?: number };
   resultSummary?: string;
+  /** Final score only — hide moneyline and bet actions. */
+  resultsOnly?: boolean;
   /** Kaggle IDs — loads the same `/api/matchup` breakdown as the predictor when both set. */
   homeTeamId?: number;
   awayTeamId?: number;
 }) {
   const homeKey = homeOddsName ?? homeName;
   const awayKey = awayOddsName ?? awayName;
-  const homeMl = getConsensusOdds(game, homeKey, "h2h");
-  const awayMl = getConsensusOdds(game, awayKey, "h2h");
-  const spread = game.bookmakers[0]?.markets?.find((m) => m.key === "spreads");
+  const hideBetting = Boolean(resultsOnly);
+  const homeMl = hideBetting ? null : getConsensusOdds(game, homeKey, "h2h");
+  const awayMl = hideBetting ? null : getConsensusOdds(game, awayKey, "h2h");
+  const spread = hideBetting ? undefined : game.bookmakers[0]?.markets?.find((m) => m.key === "spreads");
   const homeLogo = logoUrlFromTeamName(homeName);
   const awayLogo = logoUrlFromTeamName(awayName);
   const predictedWinner = homeProb != null && awayProb != null ? (homeProb >= awayProb ? homeName : awayName) : null;
@@ -76,7 +80,7 @@ export function GameOddsCard({
           <span className="font-semibold text-blue-400">
             {game.roundLabel ?? "Sweet 16"} · {game.broadcast ?? "TV TBD"}
           </span>
-          <span>{formatGameTime(game.commence_time)}</span>
+          <span>{hideBetting ? "Final" : formatGameTime(game.commence_time)}</span>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-1">
@@ -87,13 +91,15 @@ export function GameOddsCard({
               </span>
               <span className="font-mono text-xs text-muted-foreground">{formatAmericanOdds(awayMl)}</span>
             </div>
-            {awayProb != null ? (
+            {awayProb != null && !hideBetting ? (
               <p className="text-[11px] text-muted-foreground">Model: {(awayProb * 100).toFixed(1)}%</p>
             ) : null}
-            <Button size="sm" variant="secondary" className="w-full font-display text-[10px] uppercase" type="button" onClick={() => onAdd("away")}>
-              {addedState?.[`${game.id}-away`] ? "Added ✓" : "Add to bet slip →"}
-            </Button>
-            {suggestedStake?.away ? (
+            {!hideBetting ? (
+              <Button size="sm" variant="secondary" className="w-full font-display text-[10px] uppercase" type="button" onClick={() => onAdd("away")}>
+                {addedState?.[`${game.id}-away`] ? "Added ✓" : "Add to bet slip →"}
+              </Button>
+            ) : null}
+            {!hideBetting && suggestedStake?.away ? (
               <Button size="default" variant="outline" className="w-full font-display text-[11px] uppercase" type="button" onClick={() => onAdd("away")}>
                 Suggested bet: ${Math.round(suggestedStake.away)}
               </Button>
@@ -107,13 +113,15 @@ export function GameOddsCard({
               </span>
               <span className="font-mono text-xs text-muted-foreground">{formatAmericanOdds(homeMl)}</span>
             </div>
-            {homeProb != null ? (
+            {homeProb != null && !hideBetting ? (
               <p className="text-[11px] text-muted-foreground">Model: {(homeProb * 100).toFixed(1)}%</p>
             ) : null}
-            <Button size="sm" variant="secondary" className="w-full font-display text-[10px] uppercase" type="button" onClick={() => onAdd("home")}>
-              {addedState?.[`${game.id}-home`] ? "Added ✓" : "Add to bet slip →"}
-            </Button>
-            {suggestedStake?.home ? (
+            {!hideBetting ? (
+              <Button size="sm" variant="secondary" className="w-full font-display text-[10px] uppercase" type="button" onClick={() => onAdd("home")}>
+                {addedState?.[`${game.id}-home`] ? "Added ✓" : "Add to bet slip →"}
+              </Button>
+            ) : null}
+            {!hideBetting && suggestedStake?.home ? (
               <Button size="default" variant="outline" className="w-full font-display text-[11px] uppercase" type="button" onClick={() => onAdd("home")}>
                 Suggested bet: ${Math.round(suggestedStake.home)}
               </Button>
@@ -128,6 +136,7 @@ export function GameOddsCard({
               .join(" / ")}
           </p>
         ) : null}
+        {!hideBetting ? (
         <details className="rounded border border-border/70 bg-card/40 p-2 text-xs text-muted-foreground">
           <summary className="cursor-pointer font-semibold text-foreground">Game stats & model breakdown</summary>
           <div className="mt-2 space-y-1">
@@ -154,6 +163,7 @@ export function GameOddsCard({
             </div>
           ) : null}
         </details>
+        ) : null}
         {resultSummary ? (
           <div className="rounded border border-emerald-500/20 bg-emerald-500/5 px-2 py-1 text-[11px] text-emerald-300">
             {resultSummary}
