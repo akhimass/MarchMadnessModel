@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import { BetSlip } from "@/components/betting/BetSlip";
 import { GameOddsCard } from "@/components/betting/GameOddsCard";
@@ -47,6 +47,9 @@ import { ToggleGroup, ToggleGroupItem } from "@ui/toggle-group";
 
 /** Stable empty ref so React Query keys do not change identity every render while teams load. */
 const EMPTY_TEAMS: Team2026Row[] = [];
+
+/** Same for odds: `?? []` would allocate a new array every render and bust the betting-board query key. */
+const EMPTY_ODDS_GAMES: OddsGame[] = [];
 
 interface BoardRow {
   game: OddsGame;
@@ -153,20 +156,24 @@ const BettingAssistantPage = () => {
     data: oddsMeta,
     isLoading: oddsLoading,
     refetch,
-    dataUpdatedAt,
+    dataUpdatedAt: oddsDataUpdatedAt,
   } = useQuery({
     queryKey: ["odds-ncaab"],
     queryFn: getLiveOdds,
     staleTime: 5 * 60 * 1000,
   });
-  const oddsGames = oddsMeta?.games ?? [];
+  const oddsGames = oddsMeta?.games?.length ? oddsMeta.games : EMPTY_ODDS_GAMES;
   const mergedOddsGames = useMemo(() => buildBettingOddsGameList(oddsGames), [oddsGames]);
   const requestsRemaining = oddsMeta?.requestsRemaining != null ? parseInt(String(oddsMeta.requestsRemaining), 10) : null;
 
   const bracketRoundSelected = ["S16", "E8", "F4", "CHAMP"].includes(selectedRound);
 
+  // Do NOT put `mergedOddsGames` in the key: The Odds API returns a new `games` array reference
+  // whenever lines refresh (especially when games go live), which would invalidate this query every
+  // time and wipe the board. Key off odds fetch time + teams + round; queryFn always reads latest
+  // merged odds from the closure.
   const board = useQuery({
-    queryKey: ["betting-board", teamsQ.data, mergedOddsGames, selectedRound],
+    queryKey: ["betting-board", teamsQ.data, oddsDataUpdatedAt, selectedRound],
     queryFn: async () => {
       let espnRows: BracketScoreboardRow[] = [];
       try {
@@ -196,6 +203,7 @@ const BettingAssistantPage = () => {
     enabled: bracketRoundSelected,
     staleTime: 60_000,
     refetchInterval: bracketRoundSelected ? 30_000 : false,
+    placeholderData: keepPreviousData,
   });
   const gamesSectionLoading = bracketRoundSelected ? board.isLoading : oddsLoading || board.isLoading;
 
@@ -738,9 +746,9 @@ const BettingAssistantPage = () => {
             <Button type="button" variant="outline" size="sm" onClick={() => refetch()}>
               Refresh odds
             </Button>
-            {dataUpdatedAt ? (
+            {oddsDataUpdatedAt ? (
               <span className="text-[10px] text-muted-foreground">
-                Odds loaded: {new Date(dataUpdatedAt).toLocaleTimeString()}
+                Odds loaded: {new Date(oddsDataUpdatedAt).toLocaleTimeString()}
               </span>
             ) : null}
           </div>
