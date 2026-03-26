@@ -11,6 +11,7 @@ import {
   buildBettingCandidates,
   fetchMenBracketScoreboardForRound,
   scoreboardMetaForRow,
+  type BracketScoreboardRow,
 } from "@/lib/bettingEspnBoard";
 import {
   americanToImpliedProb,
@@ -43,6 +44,10 @@ function team2026RowFromStaticId(teamId: number | null | undefined): Team2026Row
 import { Button } from "@ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@ui/alert";
 import { ToggleGroup, ToggleGroupItem } from "@ui/toggle-group";
+
+/** Stable empty ref so React Query keys do not change identity every render while teams load. */
+const EMPTY_TEAMS: Team2026Row[] = [];
+
 interface BoardRow {
   game: OddsGame;
   home: Team2026Row;
@@ -142,7 +147,7 @@ const BettingAssistantPage = () => {
     },
     retryDelay: (attempt) => Math.min(1500 * 2 ** attempt, 30_000),
   });
-  const { data: teams = [] } = teamsQ;
+  const teams = teamsQ.data ?? EMPTY_TEAMS;
 
   const {
     data: oddsMeta,
@@ -161,9 +166,14 @@ const BettingAssistantPage = () => {
   const bracketRoundSelected = ["S16", "E8", "F4", "CHAMP"].includes(selectedRound);
 
   const board = useQuery({
-    queryKey: ["betting-board", teams, mergedOddsGames, selectedRound],
+    queryKey: ["betting-board", teamsQ.data, mergedOddsGames, selectedRound],
     queryFn: async () => {
-      const espnRows = await fetchMenBracketScoreboardForRound(selectedRound);
+      let espnRows: BracketScoreboardRow[] = [];
+      try {
+        espnRows = await fetchMenBracketScoreboardForRound(selectedRound);
+      } catch {
+        espnRows = [];
+      }
       const candidates = buildBettingCandidates(mergedOddsGames, teams, espnRows, selectedRound);
       return Promise.all(
         candidates.map(async ({ game, home, away, espn }) => {
@@ -187,8 +197,10 @@ const BettingAssistantPage = () => {
     staleTime: 60_000,
     refetchInterval: bracketRoundSelected ? 30_000 : false,
   });
+  const gamesSectionLoading = bracketRoundSelected ? board.isLoading : oddsLoading || board.isLoading;
+
   const completedRoundsBoardQ = useQuery({
-    queryKey: ["completed-round-board", completedQ.data, teams, selectedRound],
+    queryKey: ["completed-round-board", completedQ.data, teamsQ.data, selectedRound],
     enabled: Boolean((selectedRound === "R64" || selectedRound === "R32") && completedQ.data?.length),
     queryFn: async (): Promise<CompletedBoardRow[]> => {
       const list = (completedQ.data ?? []).filter((g) => g.round === selectedRound && g.homeKaggleId && g.awayKaggleId);
@@ -864,7 +876,7 @@ const BettingAssistantPage = () => {
               </p>
             ) : null}
           </div>
-          {oddsLoading || board.isLoading ? (
+          {gamesSectionLoading ? (
             <p className="text-sm text-muted-foreground">Loading…</p>
           ) : null}
           <div className="space-y-4">
@@ -891,7 +903,16 @@ const BettingAssistantPage = () => {
                 />
               );
             })}
-            {!oddsLoading && !board.isLoading && boardToRender.length === 0 ? (
+            {bracketRoundSelected && board.isError ? (
+              <Alert variant="destructive" className="border-red-500/40">
+                <AlertTitle>Could not load betting board</AlertTitle>
+                <AlertDescription className="text-xs">
+                  {(board.error as Error)?.message ?? "Unknown error"}. Check{" "}
+                  <code className="text-foreground">VITE_API_BASE_URL</code> (scoreboard + matchup APIs).
+                </AlertDescription>
+              </Alert>
+            ) : null}
+            {!gamesSectionLoading && boardToRender.length === 0 ? (
               <p className="text-sm text-muted-foreground">No games available for {selectedRound}.</p>
             ) : null}
           </div>

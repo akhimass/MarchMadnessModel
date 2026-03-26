@@ -166,8 +166,12 @@ export function buildBettingOddsGameList(apiGames: OddsGame[]): OddsGame[] {
     // Keep books/prices from API but preserve canonical tip-off times. Odds API `commence_time`
     // often lands on adjacent UTC/ET dates vs our NCAA round buckets, which made every game
     // infer as "R64" and empty the Sweet 16 tab.
+    // Keep canonical home/away *names* so `team2026RowFromOddsName` always resolves; book
+    // outcomes still use API strings and `outcomeMatchesTeamName` matches them.
     return {
       ...api,
+      home_team: m.home_team,
+      away_team: m.away_team,
       commence_time: m.commence_time,
       roundLabel: m.roundLabel ?? api.roundLabel,
     };
