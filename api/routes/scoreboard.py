@@ -141,6 +141,16 @@ def _fallback_games_from_cache(dates: Optional[str] = None) -> List[Dict[str, An
         # Round of 32 (dayNums 138–139)
         "20260322": [138],
         "20260323": [139],
+        # Sweet 16
+        "20260326": [143],
+        "20260327": [144],
+        # Elite 8
+        "20260328": [145],
+        "20260329": [146],
+        # Final Four
+        "20260404": [152],
+        # Championship
+        "20260406": [154],
     }
     daynums = date_to_daynums.get(dates or "", [])
 
@@ -168,6 +178,9 @@ def _fallback_games_from_cache(dates: Optional[str] = None) -> List[Dict[str, An
     picked_rows: List[Dict[str, Any]] = []
     if daynums:
         picked_rows = [r for r in rows if int(r.get("dayNum", -1)) in daynums]
+    elif dates:
+        # Date explicitly requested but not in tournament map: do not return unrelated "recent" rows.
+        picked_rows = []
     else:
         # No date specified: show most recent completed games from cache.
         picked_rows = sorted(rows, key=lambda r: int(r.get("dayNum", 0)), reverse=True)[:24]
