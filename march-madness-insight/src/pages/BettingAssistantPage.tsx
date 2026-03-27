@@ -275,12 +275,48 @@ const BettingAssistantPage = () => {
     staleTime: 60_000,
     placeholderData: keepPreviousData,
   });
-  const gamesSectionLoading = bracketRoundSelected ? board.isLoading : oddsLoading || board.isLoading;
+  const roundOddsBoardQ = useQuery({
+    queryKey: ["round-odds-board", teamsQ.data, oddsDataUpdatedAt, selectedRound],
+    enabled: Boolean((selectedRound === "R64" || selectedRound === "R32") && oddsGames.length),
+    queryFn: async (): Promise<BoardRow[]> => {
+      const candidates: Array<{ game: OddsGame; home: Team2026Row; away: Team2026Row }> = [];
+      for (const game of oddsGames) {
+        if (inferNcaaRoundFromCommence(game.commence_time, game.roundLabel) !== selectedRound) continue;
+        const res = resolveGameTeams(game, teams);
+        if (!res) continue;
+        candidates.push({ game, home: res.home, away: res.away });
+      }
+      return Promise.all(
+        candidates.map(async ({ game, home, away }) => {
+          const lo = Math.min(home.teamId, away.teamId);
+          const hi = Math.max(home.teamId, away.teamId);
+          const p = await fetchMatchupStandardProb(lo, hi, "M");
+          const homeIsLo = home.teamId === lo;
+          const homeProb = p == null ? null : homeIsLo ? p : 1 - p;
+          const awayProb = p == null ? null : homeIsLo ? 1 - p : p;
+          return { game, home, away, homeProb, awayProb } satisfies BoardRow;
+        }),
+      );
+    },
+    staleTime: 60_000,
+    placeholderData: keepPreviousData,
+  });
+  const gamesSectionLoading = bracketRoundSelected
+    ? board.isLoading
+    : oddsLoading || board.isLoading || roundOddsBoardQ.isLoading;
 
   const completedRoundsBoardQ = useQuery({
-    queryKey: ["completed-round-board", completedQ.data, teamsQ.data, selectedRound],
+    queryKey: ["completed-round-board", completedQ.data, teamsQ.data, oddsDataUpdatedAt, selectedRound],
     enabled: Boolean((selectedRound === "R64" || selectedRound === "R32") && completedQ.data?.length),
     queryFn: async (): Promise<CompletedBoardRow[]> => {
+      const marketByPair = new Map<string, OddsGame>();
+      for (const g of oddsGames) {
+        if (inferNcaaRoundFromCommence(g.commence_time, g.roundLabel) !== selectedRound) continue;
+        const res = resolveGameTeams(g, teams);
+        if (!res) continue;
+        const key = `${Math.min(res.home.teamId, res.away.teamId)}-${Math.max(res.home.teamId, res.away.teamId)}`;
+        if (!marketByPair.has(key)) marketByPair.set(key, g);
+      }
       const list = (completedQ.data ?? []).filter((g) => g.round === selectedRound && g.homeKaggleId && g.awayKaggleId);
       const rows = await Promise.all(
         list.map(async (g) => {
@@ -294,25 +330,15 @@ const BettingAssistantPage = () => {
           const p = await fetchMatchupStandardProb(lo, hi, "M");
           const homeProb = p == null ? null : home.teamId === lo ? p : 1 - p;
           const awayProb = homeProb == null ? null : 1 - homeProb;
-          const game: OddsGame = {
+          const pairKey = `${Math.min(home.teamId, away.teamId)}-${Math.max(home.teamId, away.teamId)}`;
+          const marketGame = marketByPair.get(pairKey);
+          const game: OddsGame = marketGame ?? {
             id: `completed-${g.espnId}`,
             commence_time: g.date,
             home_team: home.teamName ?? "",
             away_team: away.teamName ?? "",
             roundLabel: selectedRound === "R64" ? "Round of 64" : "Round of 32",
-            bookmakers: [
-              {
-                key: "historical",
-                title: "Historical",
-                markets: [{
-                  key: "h2h",
-                  outcomes: [
-                    { name: home.teamName ?? "", price: -110 },
-                    { name: away.teamName ?? "", price: -110 },
-                  ],
-                }],
-              },
-            ],
+            bookmakers: [],
           };
           const winner = g.home.winner ? home.teamName : away.teamName;
           return {
@@ -321,7 +347,9 @@ const BettingAssistantPage = () => {
             away,
             homeProb,
             awayProb,
-            resultSummary: `Final: ${winner} ${g.home.score}-${g.away.score}`,
+            resultSummary: marketGame
+              ? `Final: ${winner} ${g.home.score}-${g.away.score}`
+              : `Final: ${winner} ${g.home.score}-${g.away.score} · No market odds available`,
             resultsOnly: true,
           } satisfies CompletedBoardRow;
         }),
@@ -330,9 +358,19 @@ const BettingAssistantPage = () => {
     },
   });
   const boardToRender: Array<BoardRow | CompletedBoardRow> = useMemo(() => {
-    if (selectedRound === "R64" || selectedRound === "R32") return completedRoundsBoardQ.data ?? [];
+    if (selectedRound === "R64" || selectedRound === "R32") {
+      const completed = completedRoundsBoardQ.data ?? [];
+      const completedKeys = new Set(
+        completed.map((r) => `${Math.min(r.home.teamId, r.away.teamId)}-${Math.max(r.home.teamId, r.away.teamId)}`),
+      );
+      const upcoming = (roundOddsBoardQ.data ?? []).filter((r) => {
+        const key = `${Math.min(r.home.teamId, r.away.teamId)}-${Math.max(r.home.teamId, r.away.teamId)}`;
+        return !completedKeys.has(key);
+      });
+      return [...upcoming, ...completed];
+    }
     return board.data ?? [];
-  }, [selectedRound, completedRoundsBoardQ.data, board.data]);
+  }, [selectedRound, completedRoundsBoardQ.data, roundOddsBoardQ.data, board.data]);
   const sweet16UiFallbackRows: BoardRow[] = useMemo(() => {
     if (selectedRound !== "S16") return [];
     return buildBettingOddsGameList([])
