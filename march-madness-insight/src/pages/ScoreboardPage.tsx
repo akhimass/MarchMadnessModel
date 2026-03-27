@@ -11,6 +11,7 @@ import { resolveMenKaggleId } from "@/lib/espnTeamToKaggle";
 import { logoUrlFromTeamName } from "@/lib/teamLogo";
 import { LiveGameCardWithModel } from "@/components/live/LiveGameCardWithModel";
 import { filterMarchMadnessGames, type ApiTeamRow } from "@/lib/marchMadnessFilter";
+import { buildBettingOddsGameList, team2026RowFromOddsName } from "@/lib/oddsApi";
 import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@ui/toggle-group";
@@ -141,9 +142,15 @@ const ScoreboardPage = () => {
       seen.add(g.espnId);
       return true;
     });
+    const selectedDateSet = new Set((ROUND_TABS.find((r) => r.key === selectedRound)?.dates ?? []).map((d) => d.replace(/-/g, "")));
     return deduped.filter((g) => {
       const rk = gender === "M" ? inferMenScoreboardRound(g) : womensRoundKey(g);
-      return rk === selectedRound;
+      if (rk === selectedRound) return true;
+      if (gender === "M") {
+        const ymd = parseEspnDateToYyyymmdd(g.date);
+        return selectedDateSet.has(ymd);
+      }
+      return false;
     });
   }, [roundQueries, gender, womenTeamsQ.data, selectedRound]);
   const fallbackByRound = useMemo(() => {
@@ -160,6 +167,23 @@ const ScoreboardPage = () => {
     if (!days?.length) return [];
     return apiResults.filter((r) => days.includes(r.dayNum));
   }, [apiResults, selectedRound]);
+  const demoS16Fallback = useMemo(() => {
+    if (gender !== "M" || selectedRound !== "S16") return [];
+    return buildBettingOddsGameList([])
+      .map((g) => {
+        const home = team2026RowFromOddsName(g.home_team);
+        const away = team2026RowFromOddsName(g.away_team);
+        if (!home || !away) return null;
+        return {
+          id: `demo-${g.id}`,
+          homeSeed: home.seed ?? 0,
+          awaySeed: away.seed ?? 0,
+          homeAbbr: menTeams2026.find((t) => t.id === home.teamId)?.abbreviation ?? home.teamName ?? "HOME",
+          awayAbbr: menTeams2026.find((t) => t.id === away.teamId)?.abbreviation ?? away.teamName ?? "AWAY",
+        };
+      })
+      .filter((x): x is NonNullable<typeof x> => Boolean(x));
+  }, [gender, selectedRound]);
   const liveGamesOnly = useMemo(() => games.filter((g) => g.state === "in"), [games]);
   const roundLoading = roundQueries.some((q) => q.isLoading);
   const roundFetching = roundQueries.some((q) => q.isFetching);
@@ -279,7 +303,25 @@ const ScoreboardPage = () => {
                   })}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">No games for this round yet.</p>
+                demoS16Fallback.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {demoS16Fallback.map((r) => (
+                      <div key={r.id} className="rounded-xl border border-border border-l-4 border-l-blue-500 bg-card p-4">
+                        <div className="text-[10px] font-bold uppercase text-blue-400">Demo fallback · Sweet 16</div>
+                        <div className="mt-3 flex items-center justify-between">
+                          <span className="font-display text-sm font-bold uppercase">#{r.awaySeed} {r.awayAbbr}</span>
+                          <span className="font-mono text-lg font-bold">—</span>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between">
+                          <span className="font-display text-sm font-bold uppercase">#{r.homeSeed} {r.homeAbbr}</span>
+                          <span className="font-mono text-lg">—</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No games for this round yet.</p>
+                )
               )
             ) : null}
           </TabsContent>

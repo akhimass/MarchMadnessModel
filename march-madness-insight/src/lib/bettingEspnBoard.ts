@@ -9,6 +9,7 @@ import {
   type OddsGame,
 } from "@/lib/oddsApi";
 import { classifyRoundFromGame } from "@/lib/roundClassification";
+import { parseEspnDateToYyyymmdd } from "@/lib/tournamentRounds";
 
 const SELECTED_TO_TOURNAMENT_KEY: Record<string, keyof typeof TOURNAMENT_DATES> = {
   S16: "sweet16",
@@ -111,9 +112,13 @@ export async function fetchMenBracketScoreboardForRound(selectedRound: string): 
   }
 
   const out: BracketScoreboardRow[] = [];
+  const expectedDateSet = new Set(dates);
   for (const g of dedup.values()) {
     const r = classifyRoundFromGame(g, "M");
-    if (r !== expected) continue;
+    const ymd = parseEspnDateToYyyymmdd(g.date);
+    // Be tolerant during live updates: if matchup mapping/classification is stale, still include
+    // games whose ET date is within the selected round window.
+    if (r !== expected && !expectedDateSet.has(ymd)) continue;
     const homeK = mapTeamToKaggleId(g.home);
     const awayK = mapTeamToKaggleId(g.away);
     if (homeK == null || awayK == null || homeK <= 0 || awayK <= 0) continue;
