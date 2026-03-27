@@ -305,15 +305,27 @@ const BettingAssistantPage = () => {
     if (selectedRound === "R64" || selectedRound === "R32") return completedRoundsBoardQ.data ?? [];
     return board.data ?? [];
   }, [selectedRound, completedRoundsBoardQ.data, board.data]);
+  const sweet16UiFallbackRows: BoardRow[] = useMemo(() => {
+    if (selectedRound !== "S16") return [];
+    return buildBettingOddsGameList([])
+      .map((game) => {
+        const res = resolveGameTeams(game, teams);
+        if (!res) return null;
+        return { game, home: res.home, away: res.away, homeProb: null, awayProb: null } satisfies BoardRow;
+      })
+      .filter((r): r is BoardRow => Boolean(r));
+  }, [selectedRound, teams]);
+  const rowsToRender: Array<BoardRow | CompletedBoardRow> =
+    selectedRound === "S16" && boardToRender.length === 0 ? sweet16UiFallbackRows : boardToRender;
 
   const portfolioRows = useMemo((): PortfolioProbRow[] => {
-    return (boardToRender as BoardRow[])
+    return (rowsToRender as BoardRow[])
       .filter((r) => !r.resultsOnly)
       .filter(
         (r): r is PortfolioProbRow =>
           r.homeProb != null && r.awayProb != null && r.home.teamId != null && r.away.teamId != null,
       );
-  }, [boardToRender]);
+  }, [rowsToRender]);
 
   const trackRecordQ = useQuery({
     queryKey: ["betting-track-record", completedQ.data],
@@ -930,7 +942,7 @@ const BettingAssistantPage = () => {
             <p className="text-sm text-muted-foreground">Loading…</p>
           ) : null}
           <div className="space-y-4">
-            {boardToRender.map((row) => {
+            {rowsToRender.map((row) => {
               const lookupKey = `${row.game.id}-${row.home.teamId}-${row.away.teamId}`;
               const probs = strategyProbLookup.get(lookupKey);
               return (
@@ -962,7 +974,7 @@ const BettingAssistantPage = () => {
                 </AlertDescription>
               </Alert>
             ) : null}
-            {!gamesSectionLoading && boardToRender.length === 0 ? (
+            {!gamesSectionLoading && rowsToRender.length === 0 ? (
               <p className="text-sm text-muted-foreground">No games available for {selectedRound}.</p>
             ) : null}
           </div>
