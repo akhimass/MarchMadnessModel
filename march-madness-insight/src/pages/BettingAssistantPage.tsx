@@ -173,7 +173,7 @@ const BettingAssistantPage = () => {
   // time and wipe the board. Key off odds fetch time + teams + round; queryFn always reads latest
   // merged odds from the closure.
   const board = useQuery({
-    queryKey: ["betting-board", teamsQ.data, oddsDataUpdatedAt, selectedRound],
+    queryKey: ["betting-board", teamsQ.data, oddsDataUpdatedAt, completedQ.dataUpdatedAt, selectedRound],
     queryFn: async () => {
       // Optional: attach live/final lines when scoreboard matches a game on the odds slate (never replaces the slate).
       let espnRows: BracketScoreboardRow[] = [];
@@ -225,9 +225,37 @@ const BettingAssistantPage = () => {
         // Fallback 2: hard demo slate so Sweet 16 is always populated.
         candidates = buildBettingCandidates(buildBettingOddsGameList([]), teams, espnRows);
       }
+      const completedByPair = new Map<
+        string,
+        { winnerName: string; awayScore: string | number; homeScore: string | number }
+      >();
+      for (const g of completedQ.data ?? []) {
+        if (g.round !== selectedRound || !g.homeKaggleId || !g.awayKaggleId) continue;
+        const espnBacked = !String(g.espnId ?? "").startsWith("api-");
+        const homeScoreNum = Number(g.home.score ?? 0);
+        const awayScoreNum = Number(g.away.score ?? 0);
+        const hasRealScore = Number.isFinite(homeScoreNum) && Number.isFinite(awayScoreNum) && (homeScoreNum > 0 || awayScoreNum > 0);
+        // Prevent API-only synthetic rows from hiding all odds as "final" when upstream
+        // result sync gets ahead of the live board.
+        if (!espnBacked || !hasRealScore) continue;
+        const key = `${Math.min(g.homeKaggleId, g.awayKaggleId)}-${Math.max(g.homeKaggleId, g.awayKaggleId)}`;
+        completedByPair.set(key, {
+          winnerName: g.home.winner ? g.home.name : g.away.name,
+          awayScore: g.away.score,
+          homeScore: g.home.score,
+        });
+      }
       return Promise.all(
         candidates.map(async ({ game, home, away, espn }) => {
-          const meta = scoreboardMetaForRow(espn, home, away);
+          let meta = scoreboardMetaForRow(espn, home, away);
+          const pairKey = `${Math.min(home.teamId, away.teamId)}-${Math.max(home.teamId, away.teamId)}`;
+          const completed = completedByPair.get(pairKey);
+          if (completed) {
+            meta = {
+              resultsOnly: true,
+              resultSummary: `Final: ${completed.winnerName} ${completed.awayScore}-${completed.homeScore}`,
+            };
+          }
           try {
             const lo = Math.min(home.teamId, away.teamId);
             const hi = Math.max(home.teamId, away.teamId);
