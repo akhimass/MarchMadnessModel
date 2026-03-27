@@ -175,13 +175,14 @@ const BettingAssistantPage = () => {
   const board = useQuery({
     queryKey: ["betting-board", teamsQ.data, oddsDataUpdatedAt, selectedRound],
     queryFn: async () => {
+      // Optional: attach live/final lines when scoreboard matches a game on the odds slate (never replaces the slate).
       let espnRows: BracketScoreboardRow[] = [];
       try {
         espnRows = await fetchMenBracketScoreboardForRound(selectedRound);
       } catch {
         espnRows = [];
       }
-      const candidates = buildBettingCandidates(mergedOddsGames, teams, espnRows, selectedRound);
+      const candidates = buildBettingCandidates(mergedOddsGames, teams, espnRows);
       return Promise.all(
         candidates.map(async ({ game, home, away, espn }) => {
           const meta = scoreboardMetaForRow(espn, home, away);
@@ -202,7 +203,6 @@ const BettingAssistantPage = () => {
     // Do not gate on Odds API success — use mock S16 slate when the key is missing or the request fails.
     enabled: bracketRoundSelected,
     staleTime: 60_000,
-    refetchInterval: bracketRoundSelected ? 30_000 : false,
     placeholderData: keepPreviousData,
   });
   const gamesSectionLoading = bracketRoundSelected ? board.isLoading : oddsLoading || board.isLoading;

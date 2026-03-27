@@ -1,5 +1,4 @@
 import type { Team2026Row } from "@/lib/api";
-import { teamsById } from "@/data/teams2026";
 import { TOURNAMENT_DATES, type LiveGame, fetchScoreboard } from "@/lib/espnApi";
 import { espnIdToKaggleId } from "@/lib/espnIds";
 import { kaggleIdFromEspnTeam } from "@/lib/espnTeamToKaggle";
@@ -23,13 +22,6 @@ const SELECTED_TO_CLASSIFY: Record<string, string> = {
   E8: "E8",
   F4: "F4",
   CHAMP: "CHAMP",
-};
-
-const SELECTED_TO_ROUND_LABEL: Record<string, string> = {
-  S16: "Sweet 16",
-  E8: "Elite Eight",
-  F4: "Final Four",
-  CHAMP: "National Championship",
 };
 
 export type BracketScoreboardRow = {
@@ -57,13 +49,6 @@ function mapTeamToKaggleId(
   const k = team.kaggleId;
   if (k != null && k > 0) return k;
   return espnIdToKaggleId(team.espnId) ?? kaggleIdFromEspnTeam(team.abbreviation, team.name);
-}
-
-function team2026RowFromStaticId(teamId: number | null | undefined): Team2026Row | null {
-  if (teamId == null || teamId <= 0) return null;
-  const t = teamsById.get(teamId);
-  if (!t) return null;
-  return { teamId: t.id, teamName: t.name, seed: t.seed, region: t.region, gender: "M" };
 }
 
 function findTeamByOurName(teams: Team2026Row[], ourName: string): Team2026Row | undefined {
@@ -94,53 +79,6 @@ export function pairKeyFromTeamIds(a: number, b: number): string {
   const lo = Math.min(a, b);
   const hi = Math.max(a, b);
   return `${lo}-${hi}`;
-}
-
-function findOddsGameForPair(
-  games: OddsGame[],
-  teams: Team2026Row[],
-  homeId: number,
-  awayId: number,
-): OddsGame | null {
-  const want = pairKeyFromTeamIds(homeId, awayId);
-  for (const game of games) {
-    const res = resolveGameTeams(game, teams);
-    if (!res) continue;
-    const got = pairKeyFromTeamIds(res.home.teamId, res.away.teamId);
-    if (got === want) return game;
-  }
-  return null;
-}
-
-export function syntheticOddsGameFromEspn(
-  g: LiveGame,
-  home: Team2026Row,
-  away: Team2026Row,
-  selectedRound: string,
-): OddsGame {
-  const roundLabel = SELECTED_TO_ROUND_LABEL[selectedRound] ?? "NCAA Tournament";
-  return {
-    id: `espn-${g.espnId}`,
-    commence_time: g.date,
-    home_team: home.teamName ?? "",
-    away_team: away.teamName ?? "",
-    roundLabel,
-    bookmakers: [
-      {
-        key: "scoreboard",
-        title: "Scoreboard",
-        markets: [
-          {
-            key: "h2h",
-            outcomes: [
-              { name: home.teamName ?? "", price: -110 },
-              { name: away.teamName ?? "", price: -110 },
-            ],
-          },
-        ],
-      },
-    ],
-  };
 }
 
 /**
@@ -192,8 +130,9 @@ export type BettingCandidate = {
 };
 
 /**
- * Prefer ESPN bracket order when games exist (correct matchups during/after the round).
- * Fall back to Odds API / canonical slate when ESPN has not published games yet.
+ * Build the betting board from the Odds API + canonical mock slate only.
+ * ESPN scoreboard rows are **optional enrichment** (live score / final line) when pair keys match;
+ * we never replace the slate with ESPN matchups when games go live.
  */
 function bettingCandidatesFromOddsOnly(
   mergedOddsGames: OddsGame[],
@@ -209,33 +148,29 @@ function bettingCandidatesFromOddsOnly(
   return out;
 }
 
+function enrichCandidatesWithEspn(
+  candidates: BettingCandidate[],
+  espnRows: BracketScoreboardRow[],
+): BettingCandidate[] {
+  const byPair = new Map<string, LiveGame>();
+  for (const row of espnRows) {
+    const k = pairKeyFromTeamIds(row.homeKaggleId, row.awayKaggleId);
+    if (!byPair.has(k)) byPair.set(k, row.espn);
+  }
+  return candidates.map((c) => {
+    const k = pairKeyFromTeamIds(c.home.teamId, c.away.teamId);
+    const espn = byPair.get(k) ?? null;
+    return { ...c, espn };
+  });
+}
+
 export function buildBettingCandidates(
   mergedOddsGames: OddsGame[],
   teams: Team2026Row[],
   espnRows: BracketScoreboardRow[],
-  selectedRound: string,
 ): BettingCandidate[] {
-  const seen = new Set<string>();
-  const fromEspn: BettingCandidate[] = [];
-
-  if (espnRows.length > 0) {
-    for (const row of espnRows) {
-      const key = pairKeyFromTeamIds(row.homeKaggleId, row.awayKaggleId);
-      if (seen.has(key)) continue;
-      const oddsGame = findOddsGameForPair(mergedOddsGames, teams, row.homeKaggleId, row.awayKaggleId);
-      const home =
-        teams.find((t) => t.teamId === row.homeKaggleId) ?? team2026RowFromStaticId(row.homeKaggleId);
-      const away =
-        teams.find((t) => t.teamId === row.awayKaggleId) ?? team2026RowFromStaticId(row.awayKaggleId);
-      if (!home?.teamId || !away?.teamId) continue;
-      const game = oddsGame ?? syntheticOddsGameFromEspn(row.espn, home, away, selectedRound);
-      fromEspn.push({ game, home, away, espn: row.espn });
-      seen.add(key);
-    }
-    if (fromEspn.length > 0) return fromEspn;
-  }
-
-  return bettingCandidatesFromOddsOnly(mergedOddsGames, teams);
+  const base = bettingCandidatesFromOddsOnly(mergedOddsGames, teams);
+  return enrichCandidatesWithEspn(base, espnRows);
 }
 
 export function scoreboardMetaForRow(
