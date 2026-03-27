@@ -182,7 +182,49 @@ const BettingAssistantPage = () => {
       } catch {
         espnRows = [];
       }
-      const candidates = buildBettingCandidates(mergedOddsGames, teams, espnRows);
+      let candidates = buildBettingCandidates(mergedOddsGames, teams, espnRows);
+      if (selectedRound === "S16" && candidates.length === 0) {
+        // Fallback 1: completed Sweet 16 rows from results sync.
+        const completedS16 = (completedQ.data ?? []).filter(
+          (g) => g.round === "S16" && g.homeKaggleId && g.awayKaggleId,
+        );
+        if (completedS16.length > 0) {
+          candidates = completedS16
+            .map((g) => {
+              const home =
+                teams.find((t) => t.teamId === g.homeKaggleId) ?? team2026RowFromStaticId(g.homeKaggleId);
+              const away =
+                teams.find((t) => t.teamId === g.awayKaggleId) ?? team2026RowFromStaticId(g.awayKaggleId);
+              if (!home?.teamId || !away?.teamId) return null;
+              const game: OddsGame = {
+                id: `completed-s16-${g.espnId}`,
+                commence_time: g.date,
+                home_team: home.teamName ?? "",
+                away_team: away.teamName ?? "",
+                roundLabel: "Sweet 16",
+                bookmakers: [
+                  {
+                    key: "historical",
+                    title: "Historical",
+                    markets: [{
+                      key: "h2h",
+                      outcomes: [
+                        { name: home.teamName ?? "", price: -110 },
+                        { name: away.teamName ?? "", price: -110 },
+                      ],
+                    }],
+                  },
+                ],
+              };
+              return { game, home, away, espn: null };
+            })
+            .filter((c): c is NonNullable<typeof c> => Boolean(c));
+        }
+      }
+      if (selectedRound === "S16" && candidates.length === 0) {
+        // Fallback 2: hard demo slate so Sweet 16 is always populated.
+        candidates = buildBettingCandidates(buildBettingOddsGameList([]), teams, espnRows);
+      }
       return Promise.all(
         candidates.map(async ({ game, home, away, espn }) => {
           const meta = scoreboardMetaForRow(espn, home, away);
