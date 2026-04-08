@@ -20,7 +20,7 @@ import {
   inferMenScoreboardRound,
   type ScoreboardRoundKey,
 } from "@/data/ncaa2026MenMatchupRounds";
-import { parseEspnDateToYyyymmdd } from "@/lib/tournamentRounds";
+import { isMens2026TournamentPastChampionshipEt, parseEspnDateToYyyymmdd } from "@/lib/tournamentRounds";
 import { TOURNAMENT_DATES } from "@/lib/espnApi";
 
 /** Fetch windows per tab; men's games are **filtered** by matchup → `inferMenScoreboardRound`. */
@@ -205,6 +205,12 @@ const ScoreboardPage = () => {
           <div>
             <h1 className="font-display text-2xl font-bold uppercase tracking-wider md:text-3xl">SCOREBOARD</h1>
             <p className="text-sm text-muted-foreground">Live ESPN games + model projections + Live AI view</p>
+            {gender === "M" && isMens2026TournamentPastChampionshipEt() ? (
+              <p className="mt-2 rounded-md border border-border bg-card/60 px-3 py-2 text-xs text-muted-foreground">
+                2026 men&apos;s tournament is complete. Use the <span className="font-semibold text-foreground">Championship</span>{" "}
+                tab for the title game; earlier rounds stay available for final scores.
+              </p>
+            ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <ToggleGroup
@@ -331,7 +337,9 @@ const ScoreboardPage = () => {
             </p>
             {liveGamesOnly.length === 0 ? (
               <div className="rounded-xl border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
-                No live games on the board right now.
+                {gender === "M" && isMens2026TournamentPastChampionshipEt()
+                  ? "No live games — tournament complete. Switch to the Scoreboard tab and browse rounds for final scores."
+                  : "No live games on the board right now."}
               </div>
             ) : (
               <div className="space-y-4">

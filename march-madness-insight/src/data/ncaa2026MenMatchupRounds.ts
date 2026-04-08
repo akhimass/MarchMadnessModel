@@ -1,7 +1,7 @@
 /**
  * 2026 NCAA Men's Tournament — round classification by **matchup identity** (not calendar alone).
  * Schedule source: operator-provided bracket (First Four through Sweet 16).
- * Elite 8 / Final Four / Championship: fall back to date when pair not in table yet.
+ * Elite 8: fall back to ET date when pair not in table. Final Four / Championship: known 2026 pairs below + date fallback.
  */
 import type { LiveGame } from "@/lib/espnApi";
 import { TOURNAMENT_DATES } from "@/lib/espnApi";
@@ -258,6 +258,13 @@ addPair("Gonzaga", "Purdue", "S16");
 // Midwest
 addPair("Michigan", "Alabama", "S16");
 addPair("Virginia", "Iowa State", "S16");
+
+// ─── Final Four — Sat Apr 4, 2026 (Lucas Oil Stadium) ───────────────────────
+addPair("Arizona", "Michigan", "F4");
+addPair("Illinois", "UConn", "F4");
+
+// ─── Championship — Mon Apr 6, 2026 ─────────────────────────────────────────
+addPair("Michigan", "UConn", "CHAMP");
 
 /** Strict matchup classification (null if unknown pair). */
 export function inferMenRoundFromMatchup(awayName: string, homeName: string): ScoreboardRoundKey | null {

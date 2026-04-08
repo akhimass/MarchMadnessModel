@@ -30,7 +30,8 @@ import {
 import { bettingTeamLabel } from "@/lib/bettingDisplay";
 import type { BetSlipItem, KellyStrategy } from "@/types/betting";
 import type { NarrativeApiResponse } from "@/lib/api";
-import { useTournamentResults } from "@/hooks/useTournamentResults";
+import { useTournamentResults, type CompletedGameRow } from "@/hooks/useTournamentResults";
+import { isMens2026TournamentPastChampionshipEt } from "@/lib/tournamentRounds";
 import { teamsById } from "@/data/teams2026";
 import { toast } from "sonner";
 
@@ -74,6 +75,54 @@ function findTeamByOurName(teams: Team2026Row[], ourName: string): Team2026Row |
   return teams.find((t) => (t.teamName ?? "").toLowerCase() === ourName.toLowerCase());
 }
 
+const LATE_ROUND_PRETTY: Record<string, string> = {
+  S16: "Sweet 16",
+  E8: "Elite 8",
+  F4: "Final Four",
+  CHAMP: "Championship",
+};
+
+/** When Odds API / mock slate has no row for a late round, rebuild the board from synced final results. */
+function candidatesFromCompletedRound(
+  round: string,
+  games: CompletedGameRow[] | undefined,
+  teams: Team2026Row[],
+): Array<{ game: OddsGame; home: Team2026Row; away: Team2026Row; espn: null }> {
+  const label = LATE_ROUND_PRETTY[round];
+  if (!label) return [];
+  return (games ?? [])
+    .filter((g) => g.round === round && g.homeKaggleId && g.awayKaggleId)
+    .map((g) => {
+      const home = teams.find((t) => t.teamId === g.homeKaggleId) ?? team2026RowFromStaticId(g.homeKaggleId);
+      const away = teams.find((t) => t.teamId === g.awayKaggleId) ?? team2026RowFromStaticId(g.awayKaggleId);
+      if (!home?.teamId || !away?.teamId) return null;
+      const game: OddsGame = {
+        id: `completed-${round}-${g.espnId}`,
+        commence_time: g.date,
+        home_team: home.teamName ?? "",
+        away_team: away.teamName ?? "",
+        roundLabel: label,
+        bookmakers: [
+          {
+            key: "historical",
+            title: "Historical",
+            markets: [
+              {
+                key: "h2h",
+                outcomes: [
+                  { name: home.teamName ?? "", price: -110 },
+                  { name: away.teamName ?? "", price: -110 },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+      return { game, home, away, espn: null };
+    })
+    .filter((c): c is NonNullable<typeof c> => Boolean(c));
+}
+
 function resolveGameTeams(
   game: OddsGame,
   teams: Team2026Row[],
@@ -110,12 +159,14 @@ const BettingAssistantPage = () => {
   const ROUNDS = [
     { key: "R64", label: "Round of 64", status: "completed" as const },
     { key: "R32", label: "Round of 32", status: "completed" as const },
-    { key: "S16", label: "Sweet 16", status: "next" as const },
-    { key: "E8", label: "Elite 8", status: "upcoming" as const },
-    { key: "F4", label: "Final Four", status: "upcoming" as const },
-    { key: "CHAMP", label: "Championship", status: "upcoming" as const },
+    { key: "S16", label: "Sweet 16", status: "completed" as const },
+    { key: "E8", label: "Elite 8", status: "completed" as const },
+    { key: "F4", label: "Final Four", status: "completed" as const },
+    { key: "CHAMP", label: "Championship", status: "completed" as const },
   ];
-  const [selectedRound, setSelectedRound] = useState<string>("S16");
+  const [selectedRound, setSelectedRound] = useState<string>(() =>
+    isMens2026TournamentPastChampionshipEt() ? "CHAMP" : "S16",
+  );
   const [bankroll, setBankroll] = useState<number>(() =>
     parseFloat(localStorage.getItem("mm2026_bankroll") || "500"),
   );
@@ -183,43 +234,9 @@ const BettingAssistantPage = () => {
         espnRows = [];
       }
       let candidates = buildBettingCandidates(mergedOddsGames, teams, espnRows);
-      if (selectedRound === "S16" && candidates.length === 0) {
-        // Fallback 1: completed Sweet 16 rows from results sync.
-        const completedS16 = (completedQ.data ?? []).filter(
-          (g) => g.round === "S16" && g.homeKaggleId && g.awayKaggleId,
-        );
-        if (completedS16.length > 0) {
-          candidates = completedS16
-            .map((g) => {
-              const home =
-                teams.find((t) => t.teamId === g.homeKaggleId) ?? team2026RowFromStaticId(g.homeKaggleId);
-              const away =
-                teams.find((t) => t.teamId === g.awayKaggleId) ?? team2026RowFromStaticId(g.awayKaggleId);
-              if (!home?.teamId || !away?.teamId) return null;
-              const game: OddsGame = {
-                id: `completed-s16-${g.espnId}`,
-                commence_time: g.date,
-                home_team: home.teamName ?? "",
-                away_team: away.teamName ?? "",
-                roundLabel: "Sweet 16",
-                bookmakers: [
-                  {
-                    key: "historical",
-                    title: "Historical",
-                    markets: [{
-                      key: "h2h",
-                      outcomes: [
-                        { name: home.teamName ?? "", price: -110 },
-                        { name: away.teamName ?? "", price: -110 },
-                      ],
-                    }],
-                  },
-                ],
-              };
-              return { game, home, away, espn: null };
-            })
-            .filter((c): c is NonNullable<typeof c> => Boolean(c));
-        }
+      if (["S16", "E8", "F4", "CHAMP"].includes(selectedRound) && candidates.length === 0) {
+        const fromCompleted = candidatesFromCompletedRound(selectedRound, completedQ.data, teams);
+        if (fromCompleted.length > 0) candidates = fromCompleted;
       }
       if (selectedRound === "S16" && candidates.length === 0) {
         // Fallback 2: hard demo slate so Sweet 16 is always populated.
@@ -828,6 +845,9 @@ const BettingAssistantPage = () => {
             Suggested stakes and edges use the API ensemble win probability (<code className="text-foreground/90">/api/matchup</code>)
             blended with book implied odds (60/40) to maximize value.
             The effective confidence is capped to 70/30 for extreme favorites.
+            {isMens2026TournamentPastChampionshipEt()
+              ? " Late rounds default to final results and recap lines — no new picks once games are final."
+              : null}
           </p>
           {requestsRemaining != null && !Number.isNaN(requestsRemaining) && requestsRemaining < 50 ? (
             <p className="mt-2 text-xs font-semibold text-amber-500">
@@ -841,10 +861,9 @@ const BettingAssistantPage = () => {
                   <ToggleGroupItem
                     key={r.key}
                     value={r.key}
-                    disabled={r.status === "upcoming"}
-                    className={`text-[10px] font-bold uppercase ${r.status === "completed" ? "opacity-70" : ""}`}
+                    className="text-[10px] font-bold uppercase opacity-90"
                   >
-                    {r.label} {r.status === "completed" ? "✓" : r.status === "upcoming" ? "🔒" : ""}
+                    {r.label} {r.status === "completed" ? "✓" : ""}
                   </ToggleGroupItem>
                 ))}
               </ToggleGroup>
@@ -986,9 +1005,11 @@ const BettingAssistantPage = () => {
             <Alert className="border-amber-500/40 bg-amber-500/10">
               <AlertTitle>Using mock odds</AlertTitle>
               <AlertDescription className="text-xs">
-                Sweet 16 odds are projected. Add <code className="text-foreground">VITE_ODDS_API_KEY</code> to{" "}
-                <code className="text-foreground">.env</code> for live DraftKings/FanDuel lines. Free tier: ~500
-                requests/month.
+                {isMens2026TournamentPastChampionshipEt()
+                  ? "Tournament complete — late-round cards use historical placeholder lines where the Odds API has no market. Add "
+                  : "Sweet 16 odds are projected. Add "}
+                <code className="text-foreground">VITE_ODDS_API_KEY</code> to <code className="text-foreground">.env</code>{" "}
+                for live book lines when available. Free tier: ~500 requests/month.
               </AlertDescription>
             </Alert>
           ) : (

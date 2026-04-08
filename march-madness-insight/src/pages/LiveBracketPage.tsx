@@ -11,6 +11,7 @@ import {
 import { useTournamentResults } from "@/hooks/useTournamentResults";
 import { teamsById } from "@/data/teams2026";
 import { cn } from "@/lib/utils";
+import { isMens2026TournamentPastChampionshipEt } from "@/lib/tournamentRounds";
 import { LiveCompressedBracket } from "@/components/compressed-bracket/LiveCompressedBracket";
 import {
   buildCompressedBracketModelFromLive,
@@ -240,6 +241,8 @@ const LiveBracketPage = () => {
   };
 
   const completedCount = completedQ.data?.length ?? 0;
+  const menTournamentFinal =
+    gender === "M" && isMens2026TournamentPastChampionshipEt();
 
   const onSelectGame = (game: Game) => {
     setSelectedGameId(game.id);
@@ -252,12 +255,18 @@ const LiveBracketPage = () => {
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-3">
             <h1 className="font-display text-xl font-bold uppercase tracking-tight text-white">LIVE BRACKET</h1>
-            <Badge className="bg-destructive font-display text-[10px] font-bold uppercase animate-pulse">● Live</Badge>
+            {menTournamentFinal ? (
+              <Badge className="bg-muted font-display text-[10px] font-bold uppercase text-foreground">Final bracket</Badge>
+            ) : (
+              <Badge className="bg-destructive font-display text-[10px] font-bold uppercase animate-pulse">● Live</Badge>
+            )}
           </div>
           <p className="max-w-xl text-xs text-muted-foreground">
             Tournament bracket + seeds match the published field. Winners and scores from{" "}
             <span className="font-semibold text-foreground">live scoreboard sync</span> — not model picks.{" "}
-            {completedCount} completed games.
+            {menTournamentFinal
+              ? "2026 men's tournament complete — full bracket reflects final results."
+              : `${completedCount} completed games.`}
           </p>
           <ToggleGroup
             type="single"
@@ -280,8 +289,10 @@ const LiveBracketPage = () => {
 
       <div className="border-b border-border bg-[hsl(var(--bg-base))]/95 px-4 py-2">
         <p className="mx-auto max-w-7xl font-display text-[10px] uppercase text-muted-foreground">
-          Scroll horizontally on smaller screens · Later rounds fill as games finish (e.g. Sweet 16 stays TBD until R32 is
-          complete). {completedQ.isFetching ? "Updating results…" : ""}
+          {menTournamentFinal
+            ? "Final tree — all rounds filled from completed games."
+            : "Scroll horizontally on smaller screens · Later rounds fill as games finish (e.g. Sweet 16 stays TBD until R32 is complete)."}{" "}
+          {completedQ.isFetching ? "Updating results…" : ""}
         </p>
       </div>
 

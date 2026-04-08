@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { Clock, MapPin } from "lucide-react";
 import type { LiveGame } from "@/lib/espnApi";
 import { liveGameTeamDisplay } from "@/lib/bracketFieldDisplay";
+import { logoUrlFromTeamName } from "@/lib/teamLogo";
 
 export interface LiveGameCardProps {
   game: LiveGame;
@@ -53,18 +54,23 @@ function TeamLine({
           {disp.seed > 0 ? disp.seed : ""}
         </span>
         <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-md border border-border bg-muted/40">
-          {team.logoUrl ? (
-            <img
-              src={team.logoUrl}
-              alt=""
-              className="h-full w-full object-contain p-0.5"
-              loading="lazy"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center font-sans text-[10px] font-semibold text-muted-foreground">
-              {logoFallbackLetters(team)}
-            </div>
-          )}
+          <img
+            src={team.logoUrl || logoUrlFromTeamName(team.name)}
+            alt=""
+            className="h-full w-full object-contain p-0.5"
+            loading="lazy"
+            onError={(e) => {
+              const el = e.currentTarget;
+              el.style.display = "none";
+              const parent = el.parentElement;
+              if (parent && !parent.querySelector(".logo-fallback")) {
+                const fb = document.createElement("div");
+                fb.className = "logo-fallback flex h-full w-full items-center justify-center font-sans text-[10px] font-semibold text-muted-foreground";
+                fb.textContent = logoFallbackLetters(team);
+                parent.appendChild(fb);
+              }
+            }}
+          />
         </div>
         <div className="min-w-0 flex-1">
           <div
@@ -144,11 +150,21 @@ export function LiveGameCard({ game, awayModelWinProb, attachLivePanel, gender =
         <TeamLine team={game.home} isLive={isLive} isFinal={isFinal} modelWinProb={homeModelWinProb} gender={gender} />
       </div>
 
-      {isLive && game.clock ? (
+      {isLive && (game.clock || game.statusText === "Halftime") ? (
         <div className="flex items-center gap-2 border-t border-border px-4 py-2">
           <Clock className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
           <span className="font-sans text-xs font-medium text-primary">
-            {game.clock} · {game.period === 1 ? "1st half" : "2nd half"}
+            {game.statusText === "Halftime"
+              ? "Halftime"
+              : `${game.clock} · ${
+                  (game.period ?? 0) >= 3
+                    ? game.period === 3
+                      ? "OT"
+                      : `${(game.period ?? 3) - 2}OT`
+                    : game.period === 1
+                      ? "1st Half"
+                      : "2nd Half"
+                }`}
           </span>
         </div>
       ) : null}

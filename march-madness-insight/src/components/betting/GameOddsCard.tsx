@@ -72,6 +72,9 @@ export function GameOddsCard({
   const homeLogo = logoUrlFromTeamName(homeName);
   const awayLogo = logoUrlFromTeamName(awayName);
   const predictedWinner = homeProb != null && awayProb != null ? (homeProb >= awayProb ? homeName : awayName) : null;
+  const predictedWinnerProb = homeProb != null && awayProb != null
+    ? Math.max(homeProb, awayProb)
+    : null;
 
   return (
     <Card className="border-[#2a3860] bg-card shadow-sm">
@@ -80,7 +83,14 @@ export function GameOddsCard({
           <span className="font-semibold text-blue-400">
             {game.roundLabel ?? "Sweet 16"} · {game.broadcast ?? "TV TBD"}
           </span>
-          <span>{hideBetting ? "Final" : formatGameTime(game.commence_time)}</span>
+          <div className="flex items-center gap-2">
+            {hideBetting ? (
+              <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-bold uppercase text-red-400">
+                🔒 Betting Closed
+              </span>
+            ) : null}
+            <span>{hideBetting ? "Final" : formatGameTime(game.commence_time)}</span>
+          </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-1">
@@ -91,7 +101,7 @@ export function GameOddsCard({
               </span>
               <span className="font-mono text-xs text-muted-foreground">{formatAmericanOdds(awayMl)}</span>
             </div>
-            {awayProb != null && !hideBetting ? (
+            {awayProb != null ? (
               <p className="text-[11px] text-muted-foreground">Model: {(awayProb * 100).toFixed(1)}%</p>
             ) : null}
             {!hideBetting ? (
@@ -113,7 +123,7 @@ export function GameOddsCard({
               </span>
               <span className="font-mono text-xs text-muted-foreground">{formatAmericanOdds(homeMl)}</span>
             </div>
-            {homeProb != null && !hideBetting ? (
+            {homeProb != null ? (
               <p className="text-[11px] text-muted-foreground">Model: {(homeProb * 100).toFixed(1)}%</p>
             ) : null}
             {!hideBetting ? (
@@ -163,6 +173,11 @@ export function GameOddsCard({
             </div>
           ) : null}
         </details>
+        ) : null}
+        {hideBetting && predictedWinner && predictedWinnerProb != null ? (
+          <div className="rounded border border-blue-500/20 bg-blue-500/5 px-2 py-1 text-[11px] text-blue-300">
+            Model suggested: <span className="font-semibold">{predictedWinner}</span> ({(predictedWinnerProb * 100).toFixed(1)}%)
+          </div>
         ) : null}
         {resultSummary ? (
           <div className="rounded border border-emerald-500/20 bg-emerald-500/5 px-2 py-1 text-[11px] text-emerald-300">

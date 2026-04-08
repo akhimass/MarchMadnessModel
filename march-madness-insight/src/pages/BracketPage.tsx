@@ -26,6 +26,7 @@ import {
   stageTotal,
 } from "@/lib/bracketRoundUtils";
 import { addSavedBracket, loadSavedBrackets, type SavedBracket } from "@/lib/savedBrackets";
+import { isMens2026TournamentPastChampionshipEt } from "@/lib/tournamentRounds";
 import { cn } from "@/lib/utils";
 import { teamsById } from "@/data/teams2026";
 import { logoUrlFromTeamName } from "@/lib/teamLogo";
@@ -52,6 +53,12 @@ const PREV_COMPLETE: Partial<Record<StageKey, StageKey | null>> = {
   R5: "R4",
   R6: "R5",
 };
+
+function parseBracketStageParam(v: string | null): StageKey | null {
+  if (!v) return null;
+  const allowed: StageKey[] = ["R1", "R2", "R3", "R4", "R5", "R6"];
+  return allowed.includes(v as StageKey) ? (v as StageKey) : null;
+}
 
 function stageLocked(stage: StageKey, picks: Record<string, number>): boolean {
   const prev = PREV_COMPLETE[stage];
@@ -121,7 +128,11 @@ const BracketPage = () => {
   const gender: "M" | "W" = genderParam === "W" ? "W" : "M";
 
   const { picks, setPick, setPicks, clearPicks } = useBracketPicks();
-  const [activeRound, setActiveRound] = useState<StageKey>("R1");
+  const [activeRound, setActiveRound] = useState<StageKey>(() => {
+    const fromUrl = parseBracketStageParam(searchParams.get("stage"));
+    if (fromUrl) return fromUrl;
+    return isMens2026TournamentPastChampionshipEt() ? "R6" : "R1";
+  });
   const [regionFilter, setRegionFilter] = useState<"all" | "east" | "south" | "west" | "midwest">("all");
   const [flashSlot, setFlashSlot] = useState<string | null>(null);
   const [view, setView] = useState<"pick" | "saved">("pick");
@@ -240,6 +251,11 @@ const BracketPage = () => {
     }
     prevPickCount.current = pickCount;
   }, [pickCount, readOnlySnapshot]);
+
+  useEffect(() => {
+    const s = parseBracketStageParam(searchParams.get("stage"));
+    if (s) setActiveRound(s);
+  }, [searchParams]);
 
   // Auto-fill picks from completed tournament results so R32+ tabs unlock automatically.
   // Uses setPicks (not setPick) to avoid cascading downstream-pick deletion.

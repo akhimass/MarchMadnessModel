@@ -5,6 +5,7 @@ import clsx from "clsx";
 
 import { useTournamentLiveScores } from "@/hooks/useLiveScores";
 import type { LiveGame } from "@/lib/espnApi";
+import { logoUrlFromTeamName } from "@/lib/teamLogo";
 import { Button } from "@ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { Skeleton } from "@ui/skeleton";
@@ -38,13 +39,13 @@ function MiniGameRow({ game }: { game: LiveGame }) {
       <div className="flex items-center justify-between gap-2 text-sm">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <div className="h-7 w-7 shrink-0 overflow-hidden rounded border border-border bg-muted/50">
-            {game.away.logoUrl ? (
-              <img src={game.away.logoUrl} alt="" className="h-full w-full object-contain p-0.5" loading="lazy" />
-            ) : (
-              <div className="flex h-full items-center justify-center text-[9px] font-semibold text-muted-foreground">
-                {game.away.abbreviation.slice(0, 2)}
-              </div>
-            )}
+            <img
+              src={game.away.logoUrl || logoUrlFromTeamName(game.away.name)}
+              alt=""
+              className="h-full w-full object-contain p-0.5"
+              loading="lazy"
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
+            />
           </div>
           <span
             className={clsx(
@@ -63,13 +64,13 @@ function MiniGameRow({ game }: { game: LiveGame }) {
       <div className="flex items-center justify-between gap-2 text-sm">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <div className="h-7 w-7 shrink-0 overflow-hidden rounded border border-border bg-muted/50">
-            {game.home.logoUrl ? (
-              <img src={game.home.logoUrl} alt="" className="h-full w-full object-contain p-0.5" loading="lazy" />
-            ) : (
-              <div className="flex h-full items-center justify-center text-[9px] font-semibold text-muted-foreground">
-                {game.home.abbreviation.slice(0, 2)}
-              </div>
-            )}
+            <img
+              src={game.home.logoUrl || logoUrlFromTeamName(game.home.name)}
+              alt=""
+              className="h-full w-full object-contain p-0.5"
+              loading="lazy"
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
+            />
           </div>
           <span
             className={clsx(

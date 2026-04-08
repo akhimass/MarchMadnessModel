@@ -27,6 +27,20 @@ const ROUND_LABELS: Record<TournamentRoundKey, string> = {
  * Parse ESPN event time to YYYYMMDD in **America/New_York** (tournament is scheduled in ET).
  * Using the raw ISO date prefix only (UTC calendar day) mis-buckets late-night games (e.g. S16 vs E8).
  */
+/** Calendar day YYYYMMDD in America/New_York (ET). */
+export function todayEtYyyymmdd(): string {
+  return new Date()
+    .toLocaleDateString("en-CA", { timeZone: "America/New_York" })
+    .replace(/-/g, "");
+}
+
+/**
+ * After the 2026 title game (scheduled Mon Apr 6 ET), default bracket/scoreboard/betting UI to “final” views.
+ */
+export function isMens2026TournamentPastChampionshipEt(): boolean {
+  return todayEtYyyymmdd() > "20260406";
+}
+
 export function parseEspnDateToYyyymmdd(iso: string): string {
   if (!iso) return "";
   const d = new Date(iso);
