@@ -163,9 +163,23 @@ const ScoreboardPage = () => {
       F4: [152],
       CHAMP: [154],
     };
+    const roundLabels: Partial<Record<ScoreboardRoundKey, string[]>> = {
+      FF: ["FF", "First Four"],
+      R64: ["R64"],
+      R32: ["R32"],
+      S16: ["S16"],
+      E8: ["E8"],
+      F4: ["F4"],
+      CHAMP: ["CHAMP"],
+    };
     const days = map[selectedRound];
-    if (!days?.length) return [];
-    return apiResults.filter((r) => days.includes(r.dayNum));
+    const labels = roundLabels[selectedRound];
+    if (!days?.length || !labels?.length) return [];
+    const norm = (s: string | null | undefined) => String(s ?? "").trim();
+    return apiResults.filter((r) => {
+      if (days.includes(r.dayNum)) return true;
+      return labels.includes(norm(r.round));
+    });
   }, [apiResults, selectedRound]);
   const demoS16Fallback = useMemo(() => {
     if (gender !== "M" || selectedRound !== "S16") return [];

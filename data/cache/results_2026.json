@@ -10,43 +10,13 @@
     "round": "First Four"
   },
   {
-    "gameId": "6534597",
+    "gameId": "6534615",
     "season": 2026,
     "dayNum": 135,
-    "wTeamId": 1395,
-    "lTeamId": 1326,
-    "wScore": 66,
-    "lScore": 64,
-    "round": "R64"
-  },
-  {
-    "gameId": "6534607",
-    "season": 2026,
-    "dayNum": 135,
-    "wTeamId": 1304,
-    "lTeamId": 1407,
-    "wScore": 76,
-    "lScore": 47,
-    "round": "R64"
-  },
-  {
-    "gameId": "6534600",
-    "season": 2026,
-    "dayNum": 135,
-    "wTeamId": 1257,
-    "lTeamId": 1378,
-    "wScore": 83,
-    "lScore": 79,
-    "round": "R64"
-  },
-  {
-    "gameId": "6534614",
-    "season": 2026,
-    "dayNum": 135,
-    "wTeamId": 1219,
-    "lTeamId": 1458,
-    "wScore": 83,
-    "lScore": 82,
+    "wTeamId": 1116,
+    "lTeamId": 1218,
+    "wScore": 97,
+    "lScore": 78,
     "round": "R64"
   },
   {
@@ -60,93 +30,23 @@
     "round": "R64"
   },
   {
-    "gameId": "6534606",
+    "gameId": "6534617",
     "season": 2026,
     "dayNum": 135,
-    "wTeamId": 1435,
-    "lTeamId": 1270,
-    "wScore": 78,
-    "lScore": 68,
+    "wTeamId": 1211,
+    "lTeamId": 1244,
+    "wScore": 73,
+    "lScore": 64,
     "round": "R64"
   },
   {
-    "gameId": "6534601",
+    "gameId": "6534614",
     "season": 2026,
     "dayNum": 135,
-    "wTeamId": 1277,
-    "lTeamId": 1295,
-    "wScore": 92,
-    "lScore": 67,
-    "round": "R64"
-  },
-  {
-    "gameId": "6534615",
-    "season": 2026,
-    "dayNum": 135,
-    "wTeamId": 1116,
-    "lTeamId": 1218,
-    "wScore": 97,
-    "lScore": 78,
-    "round": "R64"
-  },
-  {
-    "gameId": "6534608",
-    "season": 2026,
-    "dayNum": 135,
-    "wTeamId": 1433,
-    "lTeamId": 1314,
-    "wScore": 82,
-    "lScore": 78,
-    "round": "R64"
-  },
-  {
-    "gameId": "6534620",
-    "season": 2026,
-    "dayNum": 135,
-    "wTeamId": 1276,
-    "lTeamId": 1224,
-    "wScore": 101,
-    "lScore": 80,
-    "round": "R64"
-  },
-  {
-    "gameId": "6534610",
-    "season": 2026,
-    "dayNum": 135,
-    "wTeamId": 1401,
-    "lTeamId": 1388,
-    "wScore": 63,
-    "lScore": 50,
-    "round": "R64"
-  },
-  {
-    "gameId": "6534616",
-    "season": 2026,
-    "dayNum": 135,
-    "wTeamId": 1400,
-    "lTeamId": 1140,
-    "wScore": 79,
-    "lScore": 71,
-    "round": "R64"
-  },
-  {
-    "gameId": "6534609",
-    "season": 2026,
-    "dayNum": 135,
-    "wTeamId": 1228,
-    "lTeamId": 1335,
-    "wScore": 105,
-    "lScore": 70,
-    "round": "R64"
-  },
-  {
-    "gameId": "6534621",
-    "season": 2026,
-    "dayNum": 135,
-    "wTeamId": 1387,
-    "lTeamId": 1208,
-    "wScore": 102,
-    "lScore": 77,
+    "wTeamId": 1219,
+    "lTeamId": 1458,
+    "wScore": 83,
+    "lScore": 82,
     "round": "R64"
   },
   {
@@ -160,63 +60,113 @@
     "round": "R64"
   },
   {
-    "gameId": "6534617",
+    "gameId": "6534609",
     "season": 2026,
     "dayNum": 135,
-    "wTeamId": 1211,
-    "lTeamId": 1244,
-    "wScore": 73,
+    "wTeamId": 1228,
+    "lTeamId": 1335,
+    "wScore": 105,
+    "lScore": 70,
+    "round": "R64"
+  },
+  {
+    "gameId": "6534600",
+    "season": 2026,
+    "dayNum": 135,
+    "wTeamId": 1257,
+    "lTeamId": 1378,
+    "wScore": 83,
+    "lScore": 79,
+    "round": "R64"
+  },
+  {
+    "gameId": "6534620",
+    "season": 2026,
+    "dayNum": 135,
+    "wTeamId": 1276,
+    "lTeamId": 1224,
+    "wScore": 101,
+    "lScore": 80,
+    "round": "R64"
+  },
+  {
+    "gameId": "6534601",
+    "season": 2026,
+    "dayNum": 135,
+    "wTeamId": 1277,
+    "lTeamId": 1295,
+    "wScore": 92,
+    "lScore": 67,
+    "round": "R64"
+  },
+  {
+    "gameId": "6534607",
+    "season": 2026,
+    "dayNum": 135,
+    "wTeamId": 1304,
+    "lTeamId": 1407,
+    "wScore": 76,
+    "lScore": 47,
+    "round": "R64"
+  },
+  {
+    "gameId": "6534621",
+    "season": 2026,
+    "dayNum": 135,
+    "wTeamId": 1387,
+    "lTeamId": 1208,
+    "wScore": 102,
+    "lScore": 77,
+    "round": "R64"
+  },
+  {
+    "gameId": "6534597",
+    "season": 2026,
+    "dayNum": 135,
+    "wTeamId": 1395,
+    "lTeamId": 1326,
+    "wScore": 66,
     "lScore": 64,
     "round": "R64"
   },
   {
-    "gameId": "6534626",
+    "gameId": "6534616",
     "season": 2026,
-    "dayNum": 136,
-    "wTeamId": 1246,
-    "lTeamId": 1365,
-    "wScore": 89,
-    "lScore": 84,
-    "round": "R64"
-  },
-  {
-    "gameId": "6534622",
-    "season": 2026,
-    "dayNum": 136,
-    "wTeamId": 1403,
-    "lTeamId": 1103,
-    "wScore": 91,
+    "dayNum": 135,
+    "wTeamId": 1400,
+    "lTeamId": 1140,
+    "wScore": 79,
     "lScore": 71,
     "round": "R64"
   },
   {
-    "gameId": "6534612",
+    "gameId": "6534610",
     "season": 2026,
-    "dayNum": 136,
-    "wTeamId": 1112,
-    "lTeamId": 1254,
-    "wScore": 92,
-    "lScore": 58,
+    "dayNum": 135,
+    "wTeamId": 1401,
+    "lTeamId": 1388,
+    "wScore": 63,
+    "lScore": 50,
     "round": "R64"
   },
   {
-    "gameId": "6534625",
+    "gameId": "6534608",
     "season": 2026,
-    "dayNum": 136,
-    "wTeamId": 1438,
-    "lTeamId": 1460,
+    "dayNum": 135,
+    "wTeamId": 1433,
+    "lTeamId": 1314,
     "wScore": 82,
-    "lScore": 73,
+    "lScore": 78,
     "round": "R64"
   },
   {
-    "gameId": "6534627",
+    "gameId": "6534606",
     "season": 2026,
-    "dayNum": 136,
-    "wTeamId": 1235,
-    "lTeamId": 1398,
-    "wScore": 108,
-    "lScore": 74,
+    "dayNum": 135,
+    "wTeamId": 1435,
+    "lTeamId": 1270,
+    "wScore": 78,
+    "lScore": 68,
     "round": "R64"
   },
   {
@@ -230,52 +180,22 @@
     "round": "R64"
   },
   {
-    "gameId": "6534613",
+    "gameId": "6534612",
     "season": 2026,
     "dayNum": 136,
-    "wTeamId": 1429,
-    "lTeamId": 1437,
-    "wScore": 86,
-    "lScore": 76,
+    "wTeamId": 1112,
+    "lTeamId": 1254,
+    "wScore": 92,
+    "lScore": 58,
     "round": "R64"
   },
   {
-    "gameId": "6534624",
+    "gameId": "6534603",
     "season": 2026,
     "dayNum": 136,
-    "wTeamId": 1397,
-    "lTeamId": 1275,
-    "wScore": 78,
-    "lScore": 56,
-    "round": "R64"
-  },
-  {
-    "gameId": "6534605",
-    "season": 2026,
-    "dayNum": 136,
-    "wTeamId": 1234,
-    "lTeamId": 1155,
-    "wScore": 67,
-    "lScore": 61,
-    "round": "R64"
-  },
-  {
-    "gameId": "6534602",
-    "season": 2026,
-    "dayNum": 136,
-    "wTeamId": 1417,
-    "lTeamId": 1416,
-    "wScore": 75,
-    "lScore": 71,
-    "round": "R64"
-  },
-  {
-    "gameId": "6534619",
-    "season": 2026,
-    "dayNum": 136,
-    "wTeamId": 1345,
-    "lTeamId": 1474,
-    "wScore": 104,
+    "wTeamId": 1163,
+    "lTeamId": 1202,
+    "wScore": 82,
     "lScore": 71,
     "round": "R64"
   },
@@ -290,6 +210,36 @@
     "round": "R64"
   },
   {
+    "gameId": "6534605",
+    "season": 2026,
+    "dayNum": 136,
+    "wTeamId": 1234,
+    "lTeamId": 1155,
+    "wScore": 67,
+    "lScore": 61,
+    "round": "R64"
+  },
+  {
+    "gameId": "6534627",
+    "season": 2026,
+    "dayNum": 136,
+    "wTeamId": 1235,
+    "lTeamId": 1398,
+    "wScore": 108,
+    "lScore": 74,
+    "round": "R64"
+  },
+  {
+    "gameId": "6534626",
+    "season": 2026,
+    "dayNum": 136,
+    "wTeamId": 1246,
+    "lTeamId": 1365,
+    "wScore": 89,
+    "lScore": 84,
+    "round": "R64"
+  },
+  {
     "gameId": "6534618",
     "season": 2026,
     "dayNum": 136,
@@ -300,33 +250,73 @@
     "round": "R64"
   },
   {
-    "gameId": "6534603",
+    "gameId": "6534619",
     "season": 2026,
     "dayNum": 136,
-    "wTeamId": 1163,
-    "lTeamId": 1202,
-    "wScore": 82,
+    "wTeamId": 1345,
+    "lTeamId": 1474,
+    "wScore": 104,
     "lScore": 71,
     "round": "R64"
   },
   {
-    "gameId": "6534640",
+    "gameId": "6534624",
     "season": 2026,
-    "dayNum": 137,
-    "wTeamId": 1276,
-    "lTeamId": 1387,
-    "wScore": 95,
-    "lScore": 72,
-    "round": "R32"
+    "dayNum": 136,
+    "wTeamId": 1397,
+    "lTeamId": 1275,
+    "wScore": 78,
+    "lScore": 56,
+    "round": "R64"
   },
   {
-    "gameId": "6534630",
+    "gameId": "6534622",
+    "season": 2026,
+    "dayNum": 136,
+    "wTeamId": 1403,
+    "lTeamId": 1103,
+    "wScore": 91,
+    "lScore": 71,
+    "round": "R64"
+  },
+  {
+    "gameId": "6534602",
+    "season": 2026,
+    "dayNum": 136,
+    "wTeamId": 1417,
+    "lTeamId": 1416,
+    "wScore": 75,
+    "lScore": 71,
+    "round": "R64"
+  },
+  {
+    "gameId": "6534613",
+    "season": 2026,
+    "dayNum": 136,
+    "wTeamId": 1429,
+    "lTeamId": 1437,
+    "wScore": 86,
+    "lScore": 76,
+    "round": "R64"
+  },
+  {
+    "gameId": "6534625",
+    "season": 2026,
+    "dayNum": 136,
+    "wTeamId": 1438,
+    "lTeamId": 1460,
+    "wScore": 82,
+    "lScore": 73,
+    "round": "R64"
+  },
+  {
+    "gameId": "6534637",
     "season": 2026,
     "dayNum": 137,
-    "wTeamId": 1277,
-    "lTeamId": 1257,
-    "wScore": 77,
-    "lScore": 69,
+    "wTeamId": 1116,
+    "lTeamId": 1219,
+    "wScore": 94,
+    "lScore": 88,
     "round": "R32"
   },
   {
@@ -350,16 +340,6 @@
     "round": "R32"
   },
   {
-    "gameId": "6534638",
-    "season": 2026,
-    "dayNum": 137,
-    "wTeamId": 1400,
-    "lTeamId": 1211,
-    "wScore": 74,
-    "lScore": 68,
-    "round": "R32"
-  },
-  {
     "gameId": "6534634",
     "season": 2026,
     "dayNum": 137,
@@ -367,6 +347,26 @@
     "lTeamId": 1433,
     "wScore": 76,
     "lScore": 55,
+    "round": "R32"
+  },
+  {
+    "gameId": "6534640",
+    "season": 2026,
+    "dayNum": 137,
+    "wTeamId": 1276,
+    "lTeamId": 1387,
+    "wScore": 95,
+    "lScore": 72,
+    "round": "R32"
+  },
+  {
+    "gameId": "6534630",
+    "season": 2026,
+    "dayNum": 137,
+    "wTeamId": 1277,
+    "lTeamId": 1257,
+    "wScore": 77,
+    "lScore": 69,
     "round": "R32"
   },
   {
@@ -380,63 +380,23 @@
     "round": "R32"
   },
   {
-    "gameId": "6534637",
+    "gameId": "6534638",
     "season": 2026,
     "dayNum": 137,
-    "wTeamId": 1116,
-    "lTeamId": 1219,
-    "wScore": 94,
-    "lScore": 88,
+    "wTeamId": 1400,
+    "lTeamId": 1211,
+    "wScore": 74,
+    "lScore": 68,
     "round": "R32"
   },
   {
-    "gameId": "6534639",
+    "gameId": "6534641",
     "season": 2026,
     "dayNum": 138,
-    "wTeamId": 1345,
-    "lTeamId": 1274,
-    "wScore": 79,
-    "lScore": 69,
-    "round": "R32"
-  },
-  {
-    "gameId": "6534643",
-    "season": 2026,
-    "dayNum": 138,
-    "wTeamId": 1235,
-    "lTeamId": 1246,
-    "wScore": 82,
-    "lScore": 63,
-    "round": "R32"
-  },
-  {
-    "gameId": "6534629",
-    "season": 2026,
-    "dayNum": 138,
-    "wTeamId": 1385,
-    "lTeamId": 1242,
-    "wScore": 67,
+    "wTeamId": 1104,
+    "lTeamId": 1403,
+    "wScore": 90,
     "lScore": 65,
-    "round": "R32"
-  },
-  {
-    "gameId": "6534642",
-    "season": 2026,
-    "dayNum": 138,
-    "wTeamId": 1397,
-    "lTeamId": 1438,
-    "wScore": 79,
-    "lScore": 72,
-    "round": "R32"
-  },
-  {
-    "gameId": "6534632",
-    "season": 2026,
-    "dayNum": 138,
-    "wTeamId": 1234,
-    "lTeamId": 1196,
-    "wScore": 73,
-    "lScore": 72,
     "round": "R32"
   },
   {
@@ -460,13 +420,203 @@
     "round": "R32"
   },
   {
-    "gameId": "6534641",
+    "gameId": "6534632",
     "season": 2026,
     "dayNum": 138,
-    "wTeamId": 1104,
-    "lTeamId": 1403,
-    "wScore": 90,
+    "wTeamId": 1234,
+    "lTeamId": 1196,
+    "wScore": 73,
+    "lScore": 72,
+    "round": "R32"
+  },
+  {
+    "gameId": "6534643",
+    "season": 2026,
+    "dayNum": 138,
+    "wTeamId": 1235,
+    "lTeamId": 1246,
+    "wScore": 82,
+    "lScore": 63,
+    "round": "R32"
+  },
+  {
+    "gameId": "6534639",
+    "season": 2026,
+    "dayNum": 138,
+    "wTeamId": 1345,
+    "lTeamId": 1274,
+    "wScore": 79,
+    "lScore": 69,
+    "round": "R32"
+  },
+  {
+    "gameId": "6534629",
+    "season": 2026,
+    "dayNum": 138,
+    "wTeamId": 1385,
+    "lTeamId": 1242,
+    "wScore": 67,
     "lScore": 65,
     "round": "R32"
+  },
+  {
+    "gameId": "6534642",
+    "season": 2026,
+    "dayNum": 138,
+    "wTeamId": 1397,
+    "lTeamId": 1438,
+    "wScore": 79,
+    "lScore": 72,
+    "round": "R32"
+  },
+  {
+    "gameId": "api-s16-2",
+    "season": 2026,
+    "dayNum": 143,
+    "wTeamId": 1163,
+    "lTeamId": 1385,
+    "wScore": 75,
+    "lScore": 62,
+    "round": "S16"
+  },
+  {
+    "gameId": "api-s16-1",
+    "season": 2026,
+    "dayNum": 143,
+    "wTeamId": 1181,
+    "lTeamId": 1277,
+    "wScore": 72,
+    "lScore": 68,
+    "round": "S16"
+  },
+  {
+    "gameId": "api-s16-3",
+    "season": 2026,
+    "dayNum": 143,
+    "wTeamId": 1228,
+    "lTeamId": 1222,
+    "wScore": 71,
+    "lScore": 69,
+    "round": "S16"
+  },
+  {
+    "gameId": "api-s16-4",
+    "season": 2026,
+    "dayNum": 143,
+    "wTeamId": 1304,
+    "lTeamId": 1234,
+    "wScore": 77,
+    "lScore": 74,
+    "round": "S16"
+  },
+  {
+    "gameId": "api-s16-5",
+    "season": 2026,
+    "dayNum": 144,
+    "wTeamId": 1112,
+    "lTeamId": 1116,
+    "wScore": 82,
+    "lScore": 70,
+    "round": "S16"
+  },
+  {
+    "gameId": "api-s16-7",
+    "season": 2026,
+    "dayNum": 144,
+    "wTeamId": 1276,
+    "lTeamId": 1235,
+    "wScore": 85,
+    "lScore": 72,
+    "round": "S16"
+  },
+  {
+    "gameId": "api-s16-6",
+    "season": 2026,
+    "dayNum": 144,
+    "wTeamId": 1345,
+    "lTeamId": 1400,
+    "wScore": 80,
+    "lScore": 76,
+    "round": "S16"
+  },
+  {
+    "gameId": "api-s16-8",
+    "season": 2026,
+    "dayNum": 144,
+    "wTeamId": 1397,
+    "lTeamId": 1104,
+    "wScore": 78,
+    "lScore": 73,
+    "round": "S16"
+  },
+  {
+    "gameId": "api-e8-1",
+    "season": 2026,
+    "dayNum": 145,
+    "wTeamId": 1163,
+    "lTeamId": 1181,
+    "wScore": 74,
+    "lScore": 71,
+    "round": "E8"
+  },
+  {
+    "gameId": "api-e8-2",
+    "season": 2026,
+    "dayNum": 145,
+    "wTeamId": 1228,
+    "lTeamId": 1304,
+    "wScore": 79,
+    "lScore": 75,
+    "round": "E8"
+  },
+  {
+    "gameId": "api-e8-3",
+    "season": 2026,
+    "dayNum": 146,
+    "wTeamId": 1112,
+    "lTeamId": 1345,
+    "wScore": 81,
+    "lScore": 77,
+    "round": "E8"
+  },
+  {
+    "gameId": "api-e8-4",
+    "season": 2026,
+    "dayNum": 146,
+    "wTeamId": 1276,
+    "lTeamId": 1397,
+    "wScore": 78,
+    "lScore": 73,
+    "round": "E8"
+  },
+  {
+    "gameId": "api-f4-1",
+    "season": 2026,
+    "dayNum": 152,
+    "wTeamId": 1163,
+    "lTeamId": 1228,
+    "wScore": 71,
+    "lScore": 62,
+    "round": "F4"
+  },
+  {
+    "gameId": "api-f4-2",
+    "season": 2026,
+    "dayNum": 152,
+    "wTeamId": 1276,
+    "lTeamId": 1112,
+    "wScore": 91,
+    "lScore": 73,
+    "round": "F4"
+  },
+  {
+    "gameId": "api-champ-1",
+    "season": 2026,
+    "dayNum": 154,
+    "wTeamId": 1276,
+    "lTeamId": 1163,
+    "wScore": 69,
+    "lScore": 63,
+    "round": "CHAMP"
   }
 ]

@@ -264,8 +264,8 @@ const BracketPage = () => {
     if (Object.keys(winnerByPair).length === 0) return;
 
     // Collect all matchup slots we know about so far (R1 always available;
-    // R2/R3/R4 become available as prior-round picks cascade in).
-    const allMatchups = [...r1Flat, ...r2, ...r3, ...r4];
+    // R2–R6 load as prior-round picks cascade from API + result sync).
+    const allMatchups = [...r1Flat, ...r2, ...r3, ...r4, ...r5, ...r6];
     const resultPicks: Record<string, number> = {};
 
     for (const m of allMatchups) {
@@ -288,7 +288,7 @@ const BracketPage = () => {
       if (!changed) return prev;
       return { ...prev, ...resultPicks };
     });
-  }, [gender, winnerByPair, r1Flat, r2, r3, r4, setPicks]);
+  }, [gender, winnerByPair, r1Flat, r2, r3, r4, r5, r6, setPicks]);
 
   const setGender = (g: "M" | "W") => {
     const next = new URLSearchParams(searchParams);
